@@ -181,6 +181,9 @@ public class CordovaWebView extends XWalkView {
     @SuppressLint("SetJavaScriptEnabled")
     @SuppressWarnings("deprecation")
     private void initWebViewSettings() {
+    	// Enable remote debugging server
+    	enableRemoteDebugging();
+    	
         this.setInitialScale(0);
         this.setVerticalScrollBarEnabled(false);
         // TODO: The Activity is the one that should call requestFocus().
