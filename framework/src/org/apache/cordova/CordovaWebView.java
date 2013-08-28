@@ -30,6 +30,7 @@ import org.apache.cordova.LOG;
 import org.apache.cordova.PluginManager;
 import org.apache.cordova.PluginResult;
 
+import android.app.Activity;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
@@ -49,13 +50,17 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebHistoryItem;
-import android.webkit.WebChromeClient;
+//import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
-import android.webkit.WebView;
+//import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
+import org.xwalk.core.XWalkView;
+import org.xwalk.core.XWalkWebChromeClient;
+import org.xwalk.core.XWalkClient;
+
 import android.widget.FrameLayout;
 
-public class CordovaWebView extends WebView {
+public class CordovaWebView extends XWalkView {
 
     public static final String TAG = "CordovaWebView";
 
@@ -90,7 +95,7 @@ public class CordovaWebView extends WebView {
 
     /** custom view created by the browser (a video player for example) */
     private View mCustomView;
-    private WebChromeClient.CustomViewCallback mCustomViewCallback;
+    private XWalkWebChromeClient.CustomViewCallback mCustomViewCallback;
 
     private ActivityResult mResult = null;
 
@@ -123,7 +128,7 @@ public class CordovaWebView extends WebView {
      * @param context
      */
     public CordovaWebView(Context context) {
-        super(context);
+        super(context, (Activity)null);
         if (CordovaInterface.class.isInstance(context))
         {
             this.cordova = (CordovaInterface) context;
@@ -167,7 +172,7 @@ public class CordovaWebView extends WebView {
      *
      */
     public CordovaWebView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+        super(context, attrs);
         if (CordovaInterface.class.isInstance(context))
         {
             this.cordova = (CordovaInterface) context;
@@ -191,7 +196,7 @@ public class CordovaWebView extends WebView {
      */
     @TargetApi(11)
     public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
-        super(context, attrs, defStyle, privateBrowsing);
+        super(context, attrs);
         if (CordovaInterface.class.isInstance(context))
         {
             this.cordova = (CordovaInterface) context;
@@ -231,6 +236,8 @@ public class CordovaWebView extends WebView {
 			this.requestFocusFromTouch();
 		}
 		// Enable JavaScript
+        //TODO(nhu): enable settings
+        /*
         WebSettings settings = this.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
@@ -289,6 +296,7 @@ public class CordovaWebView extends WebView {
         // Fix for CB-1405
         // Google issue 4641
         this.updateUserAgentString();
+        */
         
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
@@ -348,7 +356,7 @@ public class CordovaWebView extends WebView {
      */
     public void setWebViewClient(CordovaWebViewClient client) {
         this.viewClient = client;
-        super.setWebViewClient(client);
+        super.setXWalkClient(client);
     }
 
     /**
@@ -358,7 +366,7 @@ public class CordovaWebView extends WebView {
      */
     public void setWebChromeClient(CordovaChromeClient client) {
         this.chromeClient = client;
-        super.setWebChromeClient(client);
+        super.setXWalkWebChromeClient(client);
     }
     
     public CordovaChromeClient getWebChromeClient() {
@@ -793,7 +801,8 @@ public class CordovaWebView extends WebView {
         // If app doesn't want to run in background
         if (!keepRunning) {
             // Pause JavaScript timers (including setInterval)
-            this.pauseTimers();
+        	// TODO(nhu): implement it in XWalkView via ContentViewStatics
+            //this.pauseTimers();
         }
         paused = true;
    
@@ -810,7 +819,8 @@ public class CordovaWebView extends WebView {
         }
 
         // Resume JavaScript timers (including setInterval)
-        this.resumeTimers();
+        // TODO(nhu): implement it in XWalkView via ContentViewStatics
+        //this.resumeTimers();
         paused = false;
     }
     
@@ -864,6 +874,8 @@ public class CordovaWebView extends WebView {
     }
     
     public void printBackForwardList() {
+    	//TODO(nhu):
+    	/*
         WebBackForwardList currentList = this.copyBackForwardList();
         int currentSize = currentList.getSize();
         for(int i = 0; i < currentSize; ++i)
@@ -872,12 +884,15 @@ public class CordovaWebView extends WebView {
             String url = item.getUrl();
             LOG.d(TAG, "The URL at index: " + Integer.toString(i) + "is " + url );
         }
+        */
     }
     
     
     //Can Go Back is BROKEN!
     public boolean startOfHistory()
     {
+    	// TODO(nhu): implement copyBackForwardList in XWalkView
+    	/*
         WebBackForwardList currentList = this.copyBackForwardList();
         WebHistoryItem item = currentList.getItemAtIndex(0);
         if( item!=null){	// Null-fence in case they haven't called loadUrl yet (CB-2458)
@@ -888,9 +903,11 @@ public class CordovaWebView extends WebView {
 	        return currentUrl.equals(url);
         }
         return false;
+        */
+    	return false;
     }
 
-    public void showCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+    public void showCustomView(View view, XWalkWebChromeClient.CustomViewCallback callback) {
         // This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
         Log.d(TAG, "showing Custom View");
         // if a view already exists then immediately terminate the new one
@@ -945,11 +962,13 @@ public class CordovaWebView extends WebView {
     
     public WebBackForwardList restoreState(Bundle savedInstanceState)
     {
-        WebBackForwardList myList = super.restoreState(savedInstanceState);
+    	// TODO(nhu): implement restoreState in XWalkView
+        //WebBackForwardList myList = super.restoreState(savedInstanceState);
         Log.d(TAG, "WebView restoration crew now restoring!");
         //Initialize the plugin manager once more
         this.pluginManager.init();
-        return myList;
+        //return myList;
+        return null;
     }
 
     public void storeResult(int requestCode, int resultCode, Intent intent) {
