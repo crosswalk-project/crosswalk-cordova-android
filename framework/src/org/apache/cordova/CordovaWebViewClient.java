@@ -33,10 +33,14 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.net.http.SslError;
 import android.view.View;
-import android.webkit.HttpAuthHandler;
-import android.webkit.SslErrorHandler;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+//import android.webkit.HttpAuthHandler;
+//import android.webkit.SslErrorHandler;
+//import android.webkit.WebView;
+//import android.webkit.WebViewClient;
+import org.xwalk.core.HttpAuthHandler;
+import org.xwalk.core.SslErrorHandler;
+import org.xwalk.core.XWalkView;
+import org.xwalk.core.XWalkClient;
 
 /**
  * This class is the WebViewClient that implements callbacks for our web view.
@@ -50,7 +54,7 @@ import android.webkit.WebViewClient;
  * @see CordovaChromeClient
  * @see CordovaWebView
  */
-public class CordovaWebViewClient extends WebViewClient {
+public class CordovaWebViewClient extends XWalkClient {
 
 	private static final String TAG = "CordovaWebViewClient";
     CordovaInterface cordova;
@@ -99,7 +103,7 @@ public class CordovaWebViewClient extends WebViewClient {
      * @return              true to override, false for default behavior
      */
 	@Override
-    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+    public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
         return helper.shouldOverrideUrlLoading(view, url);
     }
     
@@ -113,7 +117,7 @@ public class CordovaWebViewClient extends WebViewClient {
      * @param realm
      */
     @Override
-    public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+    public void onReceivedHttpAuthRequest(XWalkView view, HttpAuthHandler handler, String host, String realm) {
 
         // Get the authentication token
         AuthenticationToken token = this.getAuthenticationToken(host, realm);
@@ -136,10 +140,11 @@ public class CordovaWebViewClient extends WebViewClient {
      * @param url           The url of the page.
      */
     @Override
-    public void onPageStarted(WebView view, String url, Bitmap favicon) {
+    public void onPageStarted(XWalkView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
         isCurrentlyLoading = true;
         LOG.d(TAG, "onPageStarted(" + url + ")");
+
         // Flush stale messages.
         this.appView.bridge.reset(url);
 
@@ -161,7 +166,7 @@ public class CordovaWebViewClient extends WebViewClient {
      * @param url           The url of the page.
      */
     @Override
-    public void onPageFinished(WebView view, String url) {
+    public void onPageFinished(XWalkView view, String url) {
         super.onPageFinished(view, url);
         // Ignore excessive calls.
         if (!isCurrentlyLoading) {
@@ -221,7 +226,7 @@ public class CordovaWebViewClient extends WebViewClient {
      * @param failingUrl    The url that failed to load.
      */
     @Override
-    public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+    public void onReceivedError(XWalkView view, int errorCode, String description, String failingUrl) {
         // Ignore error due to stopLoading().
         if (!isCurrentlyLoading) {
             return;
@@ -267,7 +272,7 @@ public class CordovaWebViewClient extends WebViewClient {
      */
     @TargetApi(8)
     @Override
-    public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+    public void onReceivedSslError(XWalkView view, SslErrorHandler handler, SslError error) {
 
         final String packageName = this.cordova.getActivity().getPackageName();
         final PackageManager pm = this.cordova.getActivity().getPackageManager();

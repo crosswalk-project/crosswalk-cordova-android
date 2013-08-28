@@ -31,12 +31,16 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.ConsoleMessage;
-import android.webkit.JsPromptResult;
-import android.webkit.JsResult;
+//import android.webkit.JsPromptResult;
+//import android.webkit.JsResult;
+import org.xwalk.core.JsPromptResult;
+import org.xwalk.core.JsResult;
 import android.webkit.ValueCallback;
-import android.webkit.WebChromeClient;
+//import android.webkit.WebChromeClient;
+import org.xwalk.core.XWalkWebChromeClient;
 import android.webkit.WebStorage;
-import android.webkit.WebView;
+//import android.webkit.WebView;
+import org.xwalk.core.XWalkView;
 import android.webkit.GeolocationPermissions.Callback;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -54,7 +58,7 @@ import android.widget.RelativeLayout;
  * @see CordovaWebViewClient
  * @see CordovaWebView
  */
-public class CordovaChromeClient extends WebChromeClient {
+public class CordovaChromeClient extends XWalkWebChromeClient {
 
     public static final int FILECHOOSER_RESULTCODE = 5173;
     private String TAG = "CordovaLog";
@@ -93,7 +97,7 @@ public class CordovaChromeClient extends WebChromeClient {
      * @see Other implementation in the Dialogs plugin.
      */
     @Override
-    public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
+    public boolean onJsAlert(XWalkView view, String url, String message, final JsResult result) {
         AlertDialog.Builder dlg = new AlertDialog.Builder(this.cordova.getActivity());
         dlg.setMessage(message);
         dlg.setTitle("Alert");
@@ -137,7 +141,7 @@ public class CordovaChromeClient extends WebChromeClient {
      * @see Other implementation in the Dialogs plugin.
      */
     @Override
-    public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
+    public boolean onJsConfirm(XWalkView view, String url, String message, final JsResult result) {
         AlertDialog.Builder dlg = new AlertDialog.Builder(this.cordova.getActivity());
         dlg.setMessage(message);
         dlg.setTitle("Confirm");
@@ -187,7 +191,7 @@ public class CordovaChromeClient extends WebChromeClient {
      * @see Other implementation in the Dialogs plugin.
      */
     @Override
-    public boolean onJsPrompt(WebView view, String origin, String message, String defaultValue, JsPromptResult result) {
+    public boolean onJsPrompt(XWalkView view, String origin, String message, String defaultValue, JsPromptResult result) {
         // Unlike the @JavascriptInterface bridge, this method is always called on the UI thread.
         String handledRet = appView.bridge.promptOnJsPrompt(origin, message, defaultValue);
         if (handledRet != null) {
@@ -269,7 +273,7 @@ public class CordovaChromeClient extends WebChromeClient {
     
     // API level 7 is required for this, see if we could lower this using something else
     @Override
-    public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+    public void onShowCustomView(View view, XWalkWebChromeClient.CustomViewCallback callback) {
         this.appView.showCustomView(view, callback);
     }
 
