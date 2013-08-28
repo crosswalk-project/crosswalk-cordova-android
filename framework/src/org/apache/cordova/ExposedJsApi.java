@@ -18,7 +18,8 @@
 */
 package org.apache.cordova;
 
-import android.webkit.JavascriptInterface;
+//import android.webkit.JavascriptInterface;
+import org.chromium.content.browser.JavascriptInterface;
 import org.apache.cordova.PluginManager;
 import org.json.JSONException;
 
