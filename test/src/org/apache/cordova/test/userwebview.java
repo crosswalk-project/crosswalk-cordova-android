@@ -19,7 +19,8 @@
 package org.apache.cordova.test;
 
 import android.os.Bundle;
-import android.webkit.WebView;
+//import android.webkit.WebView;
+import org.xwalk.core.XWalkView;
 import android.webkit.GeolocationPermissions.Callback;
 
 import org.apache.cordova.*;
@@ -63,13 +64,13 @@ public class userwebview extends DroidGap {
         }
 
         @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
             LOG.d("userwebview", "shouldOverrideUrlLoading(" + url + ")");
             return super.shouldOverrideUrlLoading(view, url);
         }
 
         @Override
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+        public void onReceivedError(XWalkView view, int errorCode, String description, String failingUrl) {
             LOG.d("userwebview", "onReceivedError: Error code=" + errorCode + " Description=" + description + " URL=" + failingUrl);
             super.onReceivedError(view, errorCode, description, failingUrl);
         }
