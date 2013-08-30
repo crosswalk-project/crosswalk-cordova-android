@@ -47,9 +47,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebHistoryItem;
 //import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
+//import android.webkit.WebSettings;
 //import android.webkit.WebView;
-import android.webkit.WebSettings.LayoutAlgorithm;
+//import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebViewClient;
 import android.webkit.CookieManager;
 import android.widget.FrameLayout;
@@ -57,6 +57,7 @@ import android.widget.FrameLayout;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkWebChromeClient;
 import org.xwalk.core.XWalkClient;
+import org.xwalk.core.XWalkSettings;
 
 /*
  * This class is our web view.
@@ -196,12 +197,11 @@ public class CordovaWebView extends XWalkView {
 			this.requestFocusFromTouch();
 		}
 		// Enable JavaScript
-        //TODO(nhu): enable settings
-        /*
-        WebSettings settings = this.getSettings();
+        XWalkSettings settings = this.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
-        settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
+        // nhu: N/A
+        //settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
 
         // Enable third-party cookies if on Lolipop. TODO: Make this configurable
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
@@ -210,30 +210,10 @@ public class CordovaWebView extends XWalkView {
             cookieManager.setAcceptThirdPartyCookies(this, true);
         }
 
-        // Set the nav dump for HTC 2.x devices (disabling for ICS, deprecated entirely for Jellybean 4.2)
-        try {
-            Method gingerbread_getMethod =  WebSettings.class.getMethod("setNavDump", new Class[] { boolean.class });
-            
-            String manufacturer = android.os.Build.MANUFACTURER;
-            Log.d(TAG, "CordovaWebView is running on device made by: " + manufacturer);
-            if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB &&
-                    android.os.Build.MANUFACTURER.contains("HTC"))
-            {
-                gingerbread_getMethod.invoke(settings, true);
-            }
-        } catch (NoSuchMethodException e) {
-            Log.d(TAG, "We are on a modern version of Android, we will deprecate HTC 2.3 devices in 2.8");
-        } catch (IllegalArgumentException e) {
-            Log.d(TAG, "Doing the NavDump failed with bad arguments");
-        } catch (IllegalAccessException e) {
-            Log.d(TAG, "This should never happen: IllegalAccessException means this isn't Android anymore");
-        } catch (InvocationTargetException e) {
-            Log.d(TAG, "This should never happen: InvocationTargetException means this isn't Android anymore.");
-        }
-
         //We don't save any form data in the application
-        settings.setSaveFormData(false);
-        settings.setSavePassword(false);
+        // nhu: N/A
+        //settings.setSaveFormData(false);
+        //settings.setSavePassword(false);
         
         // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
         // while we do this
@@ -246,7 +226,7 @@ public class CordovaWebView extends XWalkView {
         // Enable database
         // We keep this disabled because we use or shim to get around DOM_EXCEPTION_ERROR_16
         String databasePath = getContext().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
-        settings.setDatabaseEnabled(true);
+        //settings.setDatabaseEnabled(true);
         settings.setDatabasePath(databasePath);
         
         
@@ -257,7 +237,7 @@ public class CordovaWebView extends XWalkView {
             enableRemoteDebugging();
         }
         
-        settings.setGeolocationDatabasePath(databasePath);
+        //settings.setGeolocationDatabasePath(databasePath);
 
         // Enable DOM storage
         settings.setDomStorageEnabled(true);
@@ -267,27 +247,10 @@ public class CordovaWebView extends XWalkView {
         
         // Enable AppCache
         // Fix for CB-2282
-        settings.setAppCacheMaxSize(5 * 1048576);
+        // nhu: N/A
+        //settings.setAppCacheMaxSize(5 * 1048576);
         settings.setAppCachePath(databasePath);
         settings.setAppCacheEnabled(true);
-        
-        // Fix for CB-1405
-        // Google issue 4641
-        settings.getUserAgentString();
-        */
-        
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
-        if (this.receiver == null) {
-            this.receiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    getSettings().getUserAgentString();
-                }
-            };
-            getContext().registerReceiver(this.receiver, intentFilter);
-        }
-        // end CB-1405
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -869,7 +832,7 @@ public class CordovaWebView extends XWalkView {
     // VFY: unable to resolve virtual method 285: Landroid/webkit/WebSettings;.setAllowUniversalAccessFromFileURLs
     @TargetApi(16)
     private static final class Level16Apis {
-        static void enableUniversalAccess(WebSettings settings) {
+        static void enableUniversalAccess(XWalkSettings settings) {
             settings.setAllowUniversalAccessFromFileURLs(true);
         }
     }
