@@ -36,7 +36,7 @@ public class NativeToJsMessageQueue {
     private static final String LOG_TAG = "JsMessageQueue";
 
     // This must match the default value in incubator-cordova-js/lib/android/exec.js
-    private static final int DEFAULT_BRIDGE_MODE = 2;
+    private static final int DEFAULT_BRIDGE_MODE = 4;
     
     // Set this to true to force plugin results to be encoding as
     // JS instead of the custom format (useful for benchmarking).
@@ -82,11 +82,12 @@ public class NativeToJsMessageQueue {
     public NativeToJsMessageQueue(CordovaWebView webView, CordovaInterface cordova) {
         this.cordova = cordova;
         this.webView = webView;
-        registeredListeners = new BridgeMode[4];
+        registeredListeners = new BridgeMode[5];
         registeredListeners[0] = null;  // Polling. Requires no logic.
         registeredListeners[1] = new LoadUrlBridgeMode();
         registeredListeners[2] = new OnlineEventsBridgeMode();
         registeredListeners[3] = new PrivateApiBridgeMode();
+        registeredListeners[4] = new EvaluateJsBridgeMode();
         reset();
     }
     
@@ -370,7 +371,23 @@ public class NativeToJsMessageQueue {
 				}
         	}
         }
-    }    
+    }
+
+    /**
+     * Uses evaluateJavaScript API to eval JS.
+     * Requires XWalkView.
+     */
+    private class EvaluateJsBridgeMode implements BridgeMode {
+        public void onNativeToJsMessageAvailable() {
+            String js = popAndEncodeAsJs();
+            try {
+                webView.evaluateJavaScript(js);
+            } catch (Throwable e) {
+                Log.e(LOG_TAG, "Evaluate JS bridge failed.", e);
+            }
+        }
+    }
+
     private static class JsMessage {
         final String jsPayloadOrCallbackId;
         final PluginResult pluginResult;
