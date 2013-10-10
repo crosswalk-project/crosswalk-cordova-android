@@ -24,7 +24,8 @@ var shell = require('shelljs'),
     path  = require('path'),
     fs    = require('fs'),
     check_reqs = require('./check_reqs'),
-    ROOT    = path.join(__dirname, '..', '..');
+    ROOT    = path.join(__dirname, '..', '..'),
+    XWALK_LIBRARY_PATH= path.join(ROOT, '..', 'xwalk_core_library');
 
 // Returns a promise.
 function exec(command, opt_cwd) {
@@ -84,7 +85,8 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
 
 function runAndroidUpdate(projectPath, target_api, shared) {
     var targetFrameworkDir = getFrameworkDir(projectPath, shared);
-    return exec('android update project --subprojects --path "' + projectPath + '" --target ' + target_api + ' --library "' + path.relative(projectPath, targetFrameworkDir) + '"');
+    return (exec('android update project --subprojects --path "' + projectPath + '" --target ' + target_api + ' --library "' + path.relative(projectPath, targetFrameworkDir) + '"') &&
+            exec('android update lib-project --path "' + path.relative(projectPath, targetFrameworkDir) + '" --target ' + target_api));
 }
 
 function copyScripts(projectPath) {
@@ -142,6 +144,14 @@ exports.createProject = function(project_path, package_name, project_name, proje
 
     if (!/[a-zA-Z0-9_]+\.[a-zA-Z0-9_](.[a-zA-Z0-9_])*/.test(package_name)) {
         return Q.reject('Package name must look like: com.company.Name');
+    }
+
+    // prepare xwalk_core_library
+    if(fs.existsSync(XWALK_LIBRARY_PATH)) {
+        exec('android update lib-project -p "' + XWALK_LIBRARY_PATH + '"')
+    } else {
+        // TODO(wang16): download xwalk core library here
+        return Q.reject('No XWalk Library Project found. Please download it and extract it to $XWALK_LIBRARY_PATH')
     }
 
     // Check that requirements are met and proper targets are installed
