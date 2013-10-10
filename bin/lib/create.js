@@ -24,7 +24,8 @@ var shell = require('shelljs'),
     path  = require('path'),
     fs    = require('fs'),
     check_reqs = require('./check_reqs'),
-    ROOT    = path.join(__dirname, '..', '..');
+    ROOT    = path.join(__dirname, '..', '..'),
+    XWALK_LIBRARY_PATH= path.join(ROOT, '..', 'xwalk_core_library');
 
 // Returns a promise.
 function exec(command, opt_cwd) {
@@ -220,6 +221,14 @@ exports.createProject = function(project_path, package_name, project_name, proje
     // Check if project already exists
     if(fs.existsSync(project_path)) {
         return Q.reject('Project already exists! Delete and recreate');
+    }
+
+    // prepare xwalk_core_library
+    if(fs.existsSync(XWALK_LIBRARY_PATH)) {
+        exec('android update lib-project -p "' + XWALK_LIBRARY_PATH + '"')
+    } else {
+        // TODO(wang16): download xwalk core library here
+        return Q.reject('No XWalk Library Project found. Please download it and extract it to $XWALK_LIBRARY_PATH')
     }
 
     //Make the package conform to Java package types
