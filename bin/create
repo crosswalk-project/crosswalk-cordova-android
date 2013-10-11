@@ -34,6 +34,8 @@ then
 fi
 
 BUILD_PATH="$( cd "$( dirname "$0" )/.." && pwd )"
+XWALK_LIBRARY_REL_PATH="../xwalk_core_library"
+XWALK_LIBRARY_PATH="$BUILD_PATH"/"$XWALK_LIBRARY_REL_PATH"
 VERSION=$(cat "$BUILD_PATH"/VERSION)
 
 PROJECT_PATH="${1:-'./example'}"
@@ -93,16 +95,14 @@ then
     exit 1
 fi
 
-# if this a distribution release no need to build a jar
-if [ ! -e "$BUILD_PATH"/cordova-$VERSION.jar ] && [ -d "$BUILD_PATH"/framework ]
+# prepare xwalk_core_library
+if [ -d "$XWALK_LIBRARY_PATH" ]
 then
-    # update the cordova-android framework for the desired target
-    "$ANDROID_BIN" update project --target $TARGET --path "$BUILD_PATH"/framework &> /dev/null
-
-    # compile cordova.js and cordova.jar
-    pushd "$BUILD_PATH"/framework > /dev/null
-    ant jar > /dev/null
-    popd > /dev/null
+    android update lib-project -p "$XWALK_LIBRARY_PATH"
+else
+    # TODO(wang16): download xwalk core library here
+    echo "No XWalk Library Project found. Please download it and extract it to $XWALK_LIBRARY_PATH"
+    exit 1
 fi
 
 # create new android project
@@ -117,11 +117,9 @@ if [ -d "$BUILD_PATH"/framework ]
 then
     cp -r "$BUILD_PATH"/framework/res/xml "$PROJECT_PATH"/res
     cp "$BUILD_PATH"/framework/assets/www/cordova.js "$PROJECT_PATH"/assets/www/cordova.js
-    cp "$BUILD_PATH"/framework/cordova-$VERSION.jar "$PROJECT_PATH"/libs/cordova-$VERSION.jar
 else
     cp -r "$BUILD_PATH"/xml "$PROJECT_PATH"/res/xml
     cp "$BUILD_PATH"/cordova.js "$PROJECT_PATH"/assets/www/cordova.js
-    cp "$BUILD_PATH"/cordova-$VERSION.jar "$PROJECT_PATH"/libs/cordova-$VERSION.jar
 fi
 
 # interpolate the activity name and package
@@ -151,3 +149,13 @@ cp "$BUILD_PATH"/bin/templates/cordova/lib/list-emulator-images "$PROJECT_PATH"/
 cp "$BUILD_PATH"/bin/templates/cordova/lib/list-started-emulators "$PROJECT_PATH"/cordova/lib/list-started-emulators
 cp "$BUILD_PATH"/bin/templates/cordova/lib/start-emulator "$PROJECT_PATH"/cordova/lib/start-emulator
 
+# setup project dependency of app and cordova-xwalk-android
+REL_BUILD_PATH=$( python -c "import os.path; print os.path.relpath('$BUILD_PATH', '$PROJECT_PATH')" )
+if [ -d "$BUILD_PATH"/framework ]
+then
+    android update lib-project -p "$BUILD_PATH"/framework
+    android update project -p "$PROJECT_PATH" -l "$REL_BUILD_PATH"/framework
+else
+    android update lib-project -p "$BUILD_PATH"
+    android update project -p "$PROJECT_PATH" -l "$REL_BUILD_PATH"
+fi
