@@ -27,6 +27,7 @@ import org.json.JSONException;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.webkit.CookieSyncManager;
 
 /**
  * Plugins must extend this class and override one of the execute methods.
@@ -44,6 +45,7 @@ public class CordovaPlugin {
         assert this.cordova == null;
         this.cordova = cordova;
         this.webView = webView;
+        CookieSyncManager.createInstance(cordova.getActivity());
     }
 
     /**
