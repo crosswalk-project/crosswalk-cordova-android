@@ -78,6 +78,10 @@ public class Config {
             return;
         }
 
+        // Add "file://" and "content://" schemas to access control list by default. 
+        whitelist.addWhiteListEntry("file://*", false);
+        whitelist.addWhiteListEntry("content://*", false);
+        
         XmlResourceParser xml = action.getResources().getXml(id);
         int eventType = -1;
         while (eventType != XmlResourceParser.END_DOCUMENT) {

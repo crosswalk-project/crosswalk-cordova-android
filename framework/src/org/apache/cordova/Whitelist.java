@@ -23,7 +23,7 @@ public class Whitelist {
      * Trying to figure out how to match * is a pain
      * So, we don't use a regex here
      */
-    
+
     private boolean originHasWildcard(String origin){
         //First, check for a protocol, then split it if it has one.
         if(origin.contains("//"))
@@ -48,37 +48,70 @@ public class Whitelist {
                     //Remove the wildcard so this works properly
                     origin = origin.replace("*.", "");
                 }
-                
+
                 // TODO: we should not add more domains if * has already been added
                 Pattern schemeRegex = Pattern.compile("^[a-z-]+://");
                 Matcher matcher = schemeRegex.matcher(origin);
+                String target = "";
                 if (subdomains) {
-                    // Check for http or https protocols
-                    if (origin.startsWith("http")) {
-                        whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://(.*\\.)?")));
+                    if (origin.contains("*")) {
+                        target = origin.replace("*", ".*");
+                    }
+                    else {
+                        target = origin;
+                    }
+
+                    if (!target.endsWith("*")) {
+                        target = target + "($|/.*)";
+                    }
+
+                    // Check for http protocols
+                    if (target.startsWith("http://")) {
+                        target = target.replaceFirst("http://", "^http://(.+(:.+)?@)?([^?=]*\\.)?");
+                    }
+                    // Check for https protocols
+                    else if (target.startsWith("https://")) {
+                        target = target.replaceFirst("https://", "^https://(.+(:.+)?@)?([^?=]*\\.)?");
                     }
                     // Check for other protocols
-                    else if(matcher.find()){
-                        whiteList.add(Pattern.compile("^" + origin.replaceFirst("//", "//(.*\\.)?")));
+                    else if (matcher.find()) {
+                        target = "^" + target.replaceFirst("//", "//([^?=]*\\.)?");
                     }
                     // XXX making it stupid friendly for people who forget to include protocol/SSL
-                    else {
-                        whiteList.add(Pattern.compile("^https?://(.*\\.)?" + origin));
+                    else if (!target.startsWith(".*://")) {
+                        target = "^https?://(.+(:.+)?@)?([^?=]*\\.)?" + target;
                     }
+                    whiteList.add(Pattern.compile(target));
                     LOG.d(TAG, "Origin to allow with subdomains: %s", origin);
                 } else {
-                    // Check for http or https protocols
-                    if (origin.startsWith("http")) {
-                        whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://")));
+                    if (origin.contains("*")) {
+                        target = origin.replace("*", ".*");
+                    }
+                    else {
+                        target = origin;
+                    }
+
+                    if (!target.endsWith("*")) {
+                        target = target + "($|/.*)";
+                    }
+
+                    // Check for http protocols
+                    if (target.startsWith("http://")) {
+                        target = target.replaceFirst("http://", "^http://(.+(:.+)?@)?");
+                    }
+                    // Check for https protocols
+                    else if (target.startsWith("https://")) {
+                        target = target.replaceFirst("https://", "^https://(.+(:.+)?@)?");
                     }
                     // Check for other protocols
-                    else if(matcher.find()){
-                        whiteList.add(Pattern.compile("^" + origin));
+                    else if (matcher.find()) {
+                        target = "^" + target;
                     }
                     // XXX making it stupid friendly for people who forget to include protocol/SSL
-                    else {
-                        whiteList.add(Pattern.compile("^https?://" + origin));
+                    else if (!target.startsWith(".*://")) {
+                        target = "^https?://(.+(:.+)?@)?" + target;
                     }
+                	whiteList.add(Pattern.compile(target));
                     LOG.d(TAG, "Origin to allow: %s", origin);
                 }
             }
@@ -106,7 +139,6 @@ public class Whitelist {
         while (pit.hasNext()) {
             Pattern p = pit.next();
             Matcher m = p.matcher(url);
-
             // If match found, then cache it to speed up subsequent comparisons
             if (m.find()) {
                 whiteListCache.put(url, true);
