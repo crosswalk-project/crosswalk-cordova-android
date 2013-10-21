@@ -112,6 +112,9 @@ fi
 cp -r "$BUILD_PATH"/bin/templates/project/assets "$PROJECT_PATH"
 cp -r "$BUILD_PATH"/bin/templates/project/res "$PROJECT_PATH"
 
+# copy assets from xwalk core library
+cp -r "$XWALK_LIBRARY_PATH"/assets "$PROJECT_PATH"
+
 # copy cordova.js, cordova.jar and res/xml
 if [ -d "$BUILD_PATH"/framework ]
 then
