@@ -259,6 +259,9 @@ exports.createProject = function(project_path, package_name, project_name, proje
             // Manually create directories that would be empty within the template (since git doesn't track directories).
             shell.mkdir(path.join(project_path, 'libs'));
 
+            // copy assets from xwalk core library
+            shell.cp('-r', path.join(XWALK_LIBRARY_PATH, 'assets'), project_path);
+
             // Add in the proper eclipse project file.
             if (use_cli_template) {
                 var note = 'To show `assets/www` or `res/xml/config.xml`, go to:\n' +
