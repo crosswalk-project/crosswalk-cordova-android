@@ -34,7 +34,7 @@ then
 fi
 
 BUILD_PATH="$( cd "$( dirname "$0" )/.." && pwd )"
-XWALK_LIBRARY_REL_PATH="../xwalk_core_library"
+XWALK_LIBRARY_REL_PATH="framework/xwalk_core_library"
 XWALK_LIBRARY_PATH="$BUILD_PATH"/"$XWALK_LIBRARY_REL_PATH"
 VERSION=$(cat "$BUILD_PATH"/VERSION)
 
