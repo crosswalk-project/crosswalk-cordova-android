@@ -515,6 +515,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     protected void onPause() {
         super.onPause();
+        if (this.appView != null)
+            this.appView.onPause();
 
         LOG.d(TAG, "Paused the application!");
 
@@ -549,6 +551,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     protected void onResume() {
         super.onResume();
+        if (this.appView != null)
+            this.appView.onResume();
         LOG.d(TAG, "Resuming the App");
         
         if (this.activityState == ACTIVITY_STARTING) {
@@ -583,6 +587,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     public void onDestroy() {
         LOG.d(TAG, "CordovaActivity.onDestroy()");
         super.onDestroy();
+        if (this.appView != null)
+            this.appView.onDestroy();
 
         if (this.appView != null) {
             appView.handleDestroy();
@@ -703,6 +709,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         LOG.d(TAG, "Incoming Result. Request code = " + requestCode);
         super.onActivityResult(requestCode, resultCode, intent);
+        if (this.appView != null)
+            this.appView.onActivityResult(requestCode, resultCode, intent);
         CordovaPlugin callback = this.activityResultCallback;
         if(callback == null && initCallbackClass != null) {
             // The application was restarted, but had defined an initial callback
