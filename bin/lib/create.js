@@ -25,7 +25,7 @@ var shell = require('shelljs'),
     fs    = require('fs'),
     check_reqs = require('./check_reqs'),
     ROOT    = path.join(__dirname, '..', '..'),
-    XWALK_LIBRARY_PATH= path.join(ROOT, '..', 'xwalk_core_library');
+    XWALK_LIBRARY_PATH= path.join(ROOT, 'framework', 'xwalk_core_library');
 
 // Returns a promise.
 function exec(command, opt_cwd) {
