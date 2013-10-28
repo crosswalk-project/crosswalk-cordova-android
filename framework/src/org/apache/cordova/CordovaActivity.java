@@ -657,6 +657,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     protected void onPause() {
         super.onPause();
+        if (this.appView != null)
+            this.appView.onPause();
 
         LOG.d(TAG, "Paused the application!");
 
@@ -694,6 +696,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     protected void onResume() {
         super.onResume();
+        if (this.appView != null)
+            this.appView.onResume();
         //Reload the configuration
         Config.init(this);
 
@@ -733,6 +737,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     public void onDestroy() {
         LOG.d(TAG, "CordovaActivity.onDestroy()");
         super.onDestroy();
+        if (this.appView != null)
+            this.appView.onDestroy();
 
         // hide the splash screen to avoid leaking a window
         this.removeSplashScreen();
@@ -857,6 +863,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         LOG.d(TAG, "Incoming Result");
         super.onActivityResult(requestCode, resultCode, intent);
+        if (this.appView != null)
+            this.appView.onActivityResult(requestCode, resultCode, intent);
         Log.d(TAG, "Request code = " + requestCode);
         if (appView != null && requestCode == CordovaChromeClient.FILECHOOSER_RESULTCODE) {
         	ValueCallback<Uri> mUploadMessage = this.appView.getWebChromeClient().getValueCallback();
