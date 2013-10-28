@@ -40,6 +40,7 @@ import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -446,6 +447,18 @@ public class CordovaWebView extends XWalkView {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
         if (url.startsWith("file://") || url.startsWith("javascript:") || Config.isUrlWhiteListed(url)) {
+            if (Looper.getMainLooper().getThread() != Thread.currentThread()) {
+                // Because XWalk depends on content component, which owns notification service for each thread,
+                // Each navigation need happen on the XWalk thread that's responsible for notification service
+                // object's creation/release, otherwise, it would crash the XWalk. Such as: this function is called
+                // by the instrumentation test, which is run in the android.test.InstrumentationTestRunner.
+                //
+                // So when the above situation happens, cordova container needs to schedule this function to run
+                // on the main thread, not the instrumentation thread.
+                // TODO(Junmin): Add XWalk specific condition here after the backend switcher is ready.
+                loadUrlIntoView(url);
+                return;
+            }
             super.loadUrl(url);
         }
     }
