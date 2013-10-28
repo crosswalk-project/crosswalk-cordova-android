@@ -763,8 +763,7 @@ public class CordovaWebView extends XWalkView {
         // If app doesn't want to run in background
         if (!keepRunning) {
             // Pause JavaScript timers (including setInterval)
-        	// TODO(nhu): implement it in XWalkView via ContentViewStatics
-            //this.pauseTimers();
+            this.pauseTimers();
         }
         paused = true;
    
@@ -781,8 +780,7 @@ public class CordovaWebView extends XWalkView {
         }
 
         // Resume JavaScript timers (including setInterval)
-        // TODO(nhu): implement it in XWalkView via ContentViewStatics
-        //this.resumeTimers();
+        this.resumeTimers();
         paused = false;
     }
     
