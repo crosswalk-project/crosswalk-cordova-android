@@ -14,6 +14,7 @@ framework/assets/www/.DS_Store
 framework/assets/www/cordova-*.js
 framework/assets/www/phonegap-*.js
 framework/libs
+framework/xwalk_core_library
 test/libs
 example
 ./test
