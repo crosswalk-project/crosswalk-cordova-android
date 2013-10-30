@@ -1029,6 +1029,10 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
     }
 
     @Override
+    public void loadDataForTest(String data, String mimeType, boolean isBase64Encoded) {
+    }
+
+    @Override
     public void setCallbackForTest(Object callback) {
     }
 }
