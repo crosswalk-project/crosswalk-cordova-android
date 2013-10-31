@@ -1092,6 +1092,12 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
     }
 
     @Override
+    public void destroyExtension(XWalkExtension extension) {
+        CordovaXWalkCoreExtensionBridge bridge = (CordovaXWalkCoreExtensionBridge)extension.getRegisteredId();
+        bridge.destroy();
+    }
+
+    @Override
     public String getTitleForTest() {
         return this.getTitle();
     }
