@@ -58,16 +58,11 @@ import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkWebChromeClient;
 import org.xwalk.core.XWalkClient;
 import org.xwalk.core.XWalkSettings;
-import org.xwalk.runtime.CordovaXWalkCoreExtensionBridge;
-import org.xwalk.runtime.extension.XWalkExtension;
-import org.xwalk.runtime.extension.XWalkExtensionContext;
-import org.xwalk.runtime.extension.XWalkExtensionContextImpl;
 import org.xwalk.runtime.extension.XWalkExtensionManager;
-import org.xwalk.runtime.XWalkRuntimeViewProvider;
 
 import android.widget.FrameLayout;
 
-public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvider {
+public class CordovaWebView extends XWalkView {
 
     public static final String TAG = "CordovaWebView";
 
@@ -76,6 +71,8 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
 
     public PluginManager pluginManager;
     private boolean paused;
+
+    private XWalkExtensionManager extensionManager;
 
     private BroadcastReceiver receiver;
 
@@ -107,10 +104,6 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
     private ActivityResult mResult = null;
 
     private CordovaResourceApi resourceApi;
-
-    private Context mContext;
-    private Activity mActivity;
-    private XWalkExtensionManager mExtensionManager = null;
 
     class ActivityResult {
         
@@ -150,7 +143,6 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
         }
         this.loadConfiguration();
         this.setup();
-        this.initXWalkExtensions();
     }
 
     /**
@@ -173,7 +165,6 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
         this.initWebViewClient(this.cordova);
         this.loadConfiguration();
         this.setup();
-        this.initXWalkExtensions();
     }
 
     /**
@@ -197,7 +188,6 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
         this.setWebChromeClient(new CordovaChromeClient(this.cordova, this));
         this.loadConfiguration();
         this.setup();
-        this.initXWalkExtensions();
     }
 
     /**
@@ -223,7 +213,6 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
         this.initWebViewClient(this.cordova);
         this.loadConfiguration();
         this.setup();
-        this.initXWalkExtensions();
     }
 
 
@@ -292,6 +281,8 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
         settings.setAppCacheEnabled(true);
 
         pluginManager = new PluginManager(this, this.cordova);
+        extensionManager = new XWalkExtensionManager(this.cordova.getActivity(), this.cordova.getActivity());
+        extensionManager.loadExtensions();
         jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
         exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
@@ -774,6 +765,10 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
             this.pluginManager.onPause(keepRunning);
         }
 
+        if (this.extensionManager != null) {
+            this.extensionManager.onPause();
+        }
+
         // If app doesn't want to run in background
         if (!keepRunning) {
             // Pause JavaScript timers (including setInterval)
@@ -793,6 +788,10 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
             this.pluginManager.onResume(keepRunning);
         }
 
+        if (this.extensionManager != null) {
+            this.extensionManager.onResume();
+        }
+
         // Resume JavaScript timers (including setInterval)
         this.resumeTimers();
         paused = false;
@@ -809,6 +808,10 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
         // Forward to plugins
         if (this.pluginManager != null) {
             this.pluginManager.onDestroy();
+        }
+
+        if (this.extensionManager != null) {
+            this.extensionManager.onDestroy();
         }
         
         // unregister the receiver
@@ -951,121 +954,5 @@ public class CordovaWebView extends XWalkView implements XWalkRuntimeViewProvide
     
     public CordovaResourceApi getResourceApi() {
         return resourceApi;
-    }
-
-    public void initXWalkExtensions() {
-        mContext = this.cordova.getActivity();
-        mActivity = this.cordova.getActivity();
-        mExtensionManager = new XWalkExtensionManager(mContext, mActivity, this);
-        this.init(mContext, mActivity);
-    }
-
-    @Override
-    public void init(Context context, Activity activity) {
-        mExtensionManager.loadExtensions();
-    }
-
-    @Override
-    public XWalkExtensionContext getExtensionContext() {
-        return mExtensionManager.getExtensionContext();
-    }
-
-    @Override
-    public void onCreate() {
-    }
-
-    @Override
-    public void onResume() {
-        mExtensionManager.onResume();
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        mExtensionManager.onPause();
-        super.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        mExtensionManager.onDestroy();
-        super.onDestroy();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        mExtensionManager.onActivityResult(requestCode, resultCode, data);
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    @Override
-    public View getView() {
-        return this;
-    }
-
-    @Override
-    public void loadAppFromUrl(String url) {
-        this.loadUrl(url);
-    }
-
-    @Override
-    public void loadAppFromManifest(String manifestUrl) {
-        // TODO(gaochun) Add the implementation once the interface in core library is ready.
-    }
-
-    @Override
-    public String enableRemoteDebugging(String frontEndUrl, String socketName) {
-        return this.enableRemoteDebugging();
-    }
-
-    @Override
-    public Object onExtensionRegistered(XWalkExtension extension) {
-        CordovaXWalkCoreExtensionBridge bridge = new CordovaXWalkCoreExtensionBridge(extension, this);
-        return bridge;
-    }
-
-    @Override
-    public void onExtensionUnregistered(XWalkExtension extension) {
-    }
-
-    @Override
-    public void onMessage(XWalkExtension extension, int instanceID, String message) {
-        extension.onMessage(instanceID, message);
-    }
-
-    @Override
-    public String onSyncMessage(XWalkExtension extension, int instanceID, String message) {
-        return extension.onSyncMessage(instanceID, message);
-    }
-
-    @Override
-    public void postMessage(XWalkExtension extension, int instanceID, String message) {
-        CordovaXWalkCoreExtensionBridge bridge = (CordovaXWalkCoreExtensionBridge)extension.getRegisteredId();
-        bridge.postMessage(instanceID, message);
-    }
-
-    @Override
-    public void broadcastMessage(XWalkExtension extension, String message) {
-        CordovaXWalkCoreExtensionBridge bridge = (CordovaXWalkCoreExtensionBridge)extension.getRegisteredId();
-        bridge.broadcastMessage(message);
-    }
-
-    @Override
-    public void destroyExtension(XWalkExtension extension) {
-        CordovaXWalkCoreExtensionBridge bridge = (CordovaXWalkCoreExtensionBridge)extension.getRegisteredId();
-        bridge.destroy();
-    }
-
-    @Override
-    public String getTitleForTest() {
-        return this.getTitle();
-    }
-
-    @Override
-    public void loadDataForTest(String data, String mimeType, boolean isBase64Encoded) {
-    }
-
-    @Override
-    public void setCallbackForTest(Object callback) {
     }
 }
