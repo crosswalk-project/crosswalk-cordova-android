@@ -72,12 +72,17 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<Cordov
 
     public void testPauseAndResume()
     {
-        mInstr.callActivityOnPause(testActivity);
-        sleep();
-        assertTrue(testView.isPaused());
-        mInstr.callActivityOnResume(testActivity);
-        sleep();
-        assertFalse(testView.isPaused());
+        testActivity.runOnUiThread(new Runnable() {
+            public void run() {
+                mInstr.callActivityOnPause(testActivity);
+                sleep();
+                assertTrue(testView.isPaused());
+                mInstr.callActivityOnResume(testActivity);
+                sleep();
+                assertFalse(testView.isPaused());
+            }
+        });
+        mInstr.waitForIdleSync();
     }
     
     private void sleep() {
