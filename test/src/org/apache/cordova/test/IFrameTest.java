@@ -62,24 +62,34 @@ public class IFrameTest extends ActivityInstrumentationTestCase2 {
   
     public void testIframeDest()
     {
-        testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
-        sleep(3000);
-        testView.sendJavascript("loadUrl('index2.html')");
-        sleep(1000);
-        String url = testView.getUrl();
-        assertTrue(url.endsWith("index.html"));
+        testActivity.runOnUiThread(new Runnable() {
+            public void run() {
+                testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+                sleep(3000);
+                testView.sendJavascript("loadUrl('index2.html')");
+                sleep(1000);
+                String url = testView.getUrl();
+                assertTrue(url.endsWith("index.html"));
+            }
+    	});
+    	getInstrumentation().waitForIdleSync();
     }
     
     public void testIframeHistory()
     {
-        testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
-        sleep(3000);
-        testView.sendJavascript("loadUrl('index2.html')");
-        sleep(1000);
-        String url = testView.getUrl();
-        testView.backHistory();
-        sleep(1000);
-        assertTrue(url.endsWith("index.html"));
+        testActivity.runOnUiThread(new Runnable() {
+            public void run() {
+                testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+                sleep(3000);
+                testView.sendJavascript("loadUrl('index2.html')");
+                sleep(1000);
+                String url = testView.getUrl();
+                testView.backHistory();
+                sleep(1000);
+                assertTrue(url.endsWith("index.html"));
+            }
+    	});
+    	getInstrumentation().waitForIdleSync();
     }
     
     private void sleep(int timeout) {

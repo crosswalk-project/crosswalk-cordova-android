@@ -56,11 +56,16 @@ public class HtmlNotFoundTest extends ActivityInstrumentationTestCase2<htmlnotfo
 
   public void testUrl()
   {
-      sleep();
-      String good_url = "file:///android_asset/www/htmlnotfound/error.html";
-      String url = testView.getUrl();
-      assertNotNull(url);
-      assertFalse(url.equals(good_url));
+      testActivity.runOnUiThread(new Runnable() {
+          public void run() {
+              sleep();
+              String good_url = "file:///android_asset/www/htmlnotfound/error.html";
+              String url = testView.getUrl();
+              assertNotNull(url);
+              assertFalse(url.equals(good_url));
+          }
+  	  });
+      getInstrumentation().waitForIdleSync();
   }
 
   private void sleep() {
