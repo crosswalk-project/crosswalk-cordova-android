@@ -98,7 +98,7 @@ fi
 # prepare xwalk_core_library
 if [ -d "$XWALK_LIBRARY_PATH" ]
 then
-    android update lib-project -p "$XWALK_LIBRARY_PATH"
+    android update lib-project -p "$XWALK_LIBRARY_PATH" --target $TARGET
 else
     # TODO(wang16): download xwalk core library here
     echo "No XWalk Library Project found. Please download it and extract it to $XWALK_LIBRARY_PATH"
@@ -156,9 +156,9 @@ cp "$BUILD_PATH"/bin/templates/cordova/lib/start-emulator "$PROJECT_PATH"/cordov
 REL_BUILD_PATH=$( python -c "import os.path; print os.path.relpath('$BUILD_PATH', '$PROJECT_PATH')" )
 if [ -d "$BUILD_PATH"/framework ]
 then
-    android update lib-project -p "$BUILD_PATH"/framework
-    android update project -p "$PROJECT_PATH" -l "$REL_BUILD_PATH"/framework
+    android update lib-project -p "$BUILD_PATH"/framework --target $TARGET
+    android update project -p "$PROJECT_PATH" -l "$REL_BUILD_PATH"/framework --target $TARGET
 else
-    android update lib-project -p "$BUILD_PATH"
-    android update project -p "$PROJECT_PATH" -l "$REL_BUILD_PATH"
+    android update lib-project -p "$BUILD_PATH" --target $TARGET
+    android update project -p "$PROJECT_PATH" -l "$REL_BUILD_PATH" --target $TARGET
 fi
