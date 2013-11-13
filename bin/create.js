@@ -94,6 +94,20 @@ function exec(command) {
         WScript.sleep(100);
     }
 }
+function getExecOutput(command) {
+    var oShell=shell.Exec(command);
+    var output=[];
+    var line_num = 0;
+    while (oShell.Status == 0) {
+        while (!oShell.StdOut.AtEndOfStream) {
+            var line = oShell.StdOut.ReadLine();
+            output[line_num] = line;
+            line_num ++;
+        }
+        WScript.sleep(100);
+    }
+    return output.join('\n');
+}
 
 function createAppInfoJar() {
     if(!fso.FileExists(ROOT+"\\bin\\templates\\cordova\\appinfo.jar")) {
@@ -106,8 +120,16 @@ function createAppInfoJar() {
     }
 }
 
+var PYTHON = getExecOutput('where python').split('\n')[0];
+if (PYTHON == '') {
+    Log('Python not found, please install it');
+    Wscript.Quit(2);
+}
+
 // working dir
 var ROOT = WScript.ScriptFullName.split('\\bin\\create.js').join('');
+var XWALK_LIBRARY_REL_PATH = 'framework\\xwalk_core_library';
+var XWALK_LIBRARY_PATH = ROOT + '\\' + XWALK_LIBRARY_REL_PATH;
 if (args.Count() > 0) {
     // support help flags
     if (args(0) == "--help" || args(0) == "/?" ||
@@ -146,13 +168,13 @@ var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
 Log("Creating new android project...");
 exec('android.bat create project --target "'+TARGET+'" --path "'+PROJECT_PATH+'" --package "'+PACKAGE+'" --activity "'+ACTIVITY+'"');
 
-// build from source. distro should have these files
-if (!fso.FileExists(ROOT+'\\cordova-'+VERSION+'.jar') &&
-    !fso.FileExists(ROOT+'\\cordova.js')) {
-    Log("Building jar and js files...");
-    // update the cordova framework project to a target that exists on this machine
-    exec('android.bat update project --target "'+TARGET+'" --path "'+ROOT+'\\framework"');
-    exec('ant.bat -f "'+ ROOT +'\\framework\\build.xml" jar');
+// prepare xwalk_core_library
+if (fso.FolderExists(XWALK_LIBRARY_PATH)) {
+    exec('android.bat update lib-project --target "'+TARGET+'" -p "'+XWALK_LIBRARY_PATH+'"');
+}
+else {
+    Log('No XWalk Library Project found. Please download it and extract it to ' + XWALK_LIBRARY_PATH);
+    WScript.Quit(2);
 }
 
 // copy in the project template
@@ -167,14 +189,11 @@ exec('%comspec% /c copy "' + ROOT + '"\\bin\\templates\\project\\Activity.java "
 Log("Copying js, jar & config.xml files...");
 if(fso.FolderExists(ROOT + '\\framework')) {
     exec('%comspec% /c copy "'+ROOT+'\\framework\\assets\\www\\cordova.js" "'+PROJECT_PATH+'\\assets\\www\\cordova.js" /Y');
-    exec('%comspec% /c copy "'+ROOT+'\\framework\\cordova-'+VERSION+'.jar" "'+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar" /Y');
     fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
     exec('%comspec% /c copy "'+ROOT+'\\framework\\res\\xml\\config.xml" "' + PROJECT_PATH + '\\res\\xml\\config.xml" /Y');
 } else {
     // copy in cordova.js
     exec('%comspec% /c copy "'+ROOT+'\\cordova.js" "'+PROJECT_PATH+'\\assets\\www\\cordova.js" /Y');
-    // copy in cordova.jar
-    exec('%comspec% /c copy "'+ROOT+'\\cordova-'+VERSION+'.jar" "'+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar" /Y');
     // copy in xml
     fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
     exec('%comspec% /c copy "'+ROOT+'\\xml\\config.xml" "' + PROJECT_PATH + '\\res\\xml\\config.xml" /Y');
@@ -200,6 +219,9 @@ exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\log.bat" "' + PROJEC
 exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\run.bat" "' + PROJECT_PATH + '\\cordova\\run.bat" /Y');
 exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\version.bat" "' + PROJECT_PATH + '\\cordova\\version.bat" /Y');
 
+// copy assets from xwalk core library
+exec('%comspec% /c copy "'+XWALK_LIBRARY_PATH+'\\assets\\*" "' + PROJECT_PATH + '\\assets\\" /Y');
+
 // interpolate the activity name and package
 Log("Updating AndroidManifest.xml and Main Activity...");
 replaceInFile(ACTIVITY_PATH, /__ACTIVITY__/, ACTIVITY);
@@ -208,3 +230,14 @@ replaceInFile(ACTIVITY_PATH, /__ID__/, PACKAGE);
 replaceInFile(MANIFEST_PATH, /__ACTIVITY__/, ACTIVITY);
 replaceInFile(MANIFEST_PATH, /__PACKAGE__/, PACKAGE);
 replaceInFile(MANIFEST_PATH, /__APILEVEL__/, API_LEVEL);
+
+// setup project dependency of app and cordova-xwalk-android
+REL_ROOT_PATH = getExecOutput('"'+PYTHON+'" -c "import os.path; print os.path.relpath(\''+ROOT+'\', \''+PROJECT_PATH+'\')"');
+if (fso.FolderExists(ROOT + '\\framework')) {
+    exec('android.bat update lib-project --target "'+TARGET+'" -p "'+ROOT+'\\framework"');
+    exec('android.bat update project --target "'+TARGET+'" -p "'+PROJECT_PATH+'" -l "'+REL_ROOT_PATH+'\\framework"');
+}
+else {
+    exec('android.bat update lib-project --target "'+TARGET+'" -p "'+ROOT+'"');
+    exec('android.bat update project --target "'+TARGET+'" -p "'+PROJECT_PATH+'" -l "'+REL_ROOT_PATH+'"');
+}
