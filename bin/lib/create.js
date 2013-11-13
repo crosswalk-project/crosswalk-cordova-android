@@ -225,7 +225,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
 
     // prepare xwalk_core_library
     if(fs.existsSync(XWALK_LIBRARY_PATH)) {
-        exec('android update lib-project -p "' + XWALK_LIBRARY_PATH + '"')
+        exec('android update lib-project --path "' + XWALK_LIBRARY_PATH + '" --target "' + target_api + '"' )
     } else {
         // TODO(wang16): download xwalk core library here
         return Q.reject('No XWalk Library Project found. Please download it and extract it to $XWALK_LIBRARY_PATH')
