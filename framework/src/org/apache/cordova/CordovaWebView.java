@@ -400,7 +400,7 @@ public class CordovaWebView extends XWalkView {
         // Create a timeout timer for loadUrl
         final CordovaWebView me = this;
         final int currentLoadUrlTimeout = me.loadUrlTimeout;
-        final int loadUrlTimeoutValue = Integer.parseInt(this.getProperty("loadUrlTimeoutValue", "20000"));
+        final int loadUrlTimeoutValue = Integer.parseInt(this.getProperty("loadurltimeoutvalue", "20000"));
 
         // Timeout error method
         final Runnable loadError = new Runnable() {
