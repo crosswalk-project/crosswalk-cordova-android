@@ -52,14 +52,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.WebBackForwardList;
-import android.webkit.WebHistoryItem;
+//import android.webkit.WebBackForwardList;
+//import android.webkit.WebHistoryItem;
 //import android.webkit.WebChromeClient;
 //import android.webkit.WebSettings;
 //import android.webkit.WebView;
 //import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.FrameLayout;
 
+import org.xwalk.core.WebBackForwardList;
+import org.xwalk.core.WebHistoryItem;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkWebChromeClient;
 import org.xwalk.core.XWalkClient;
@@ -898,8 +900,6 @@ public class CordovaWebView extends XWalkView {
     }
     
     public void printBackForwardList() {
-    	//TODO(nhu):
-    	/*
         WebBackForwardList currentList = this.copyBackForwardList();
         int currentSize = currentList.getSize();
         for(int i = 0; i < currentSize; ++i)
@@ -908,15 +908,12 @@ public class CordovaWebView extends XWalkView {
             String url = item.getUrl();
             LOG.d(TAG, "The URL at index: " + Integer.toString(i) + " is " + url );
         }
-        */
     }
     
     
     //Can Go Back is BROKEN!
     public boolean startOfHistory()
     {
-    	// TODO(nhu): implement copyBackForwardList in XWalkView
-    	/*
         WebBackForwardList currentList = this.copyBackForwardList();
         WebHistoryItem item = currentList.getItemAtIndex(0);
         if( item!=null){	// Null-fence in case they haven't called loadUrl yet (CB-2458)
@@ -927,8 +924,6 @@ public class CordovaWebView extends XWalkView {
 	        return currentUrl.equals(url);
         }
         return false;
-        */
-    	return false;
     }
 
     public void showCustomView(View view, XWalkWebChromeClient.CustomViewCallback callback) {
@@ -986,13 +981,11 @@ public class CordovaWebView extends XWalkView {
     
     public WebBackForwardList restoreState(Bundle savedInstanceState)
     {
-    	// TODO(nhu): implement restoreState in XWalkView
-        //WebBackForwardList myList = super.restoreState(savedInstanceState);
+        WebBackForwardList myList = super.restoreState(savedInstanceState);
         Log.d(TAG, "WebView restoration crew now restoring!");
         //Initialize the plugin manager once more
         this.pluginManager.init();
-        //return myList;
-        return null;
+        return myList;
     }
 
     public void storeResult(int requestCode, int resultCode, Intent intent) {
