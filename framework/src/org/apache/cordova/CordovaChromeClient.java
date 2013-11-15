@@ -43,7 +43,7 @@ import org.xwalk.core.XWalkWebChromeClient;
 import android.webkit.WebStorage;
 //import android.webkit.WebView;
 import org.xwalk.core.XWalkView;
-import android.webkit.GeolocationPermissions.Callback;
+import org.xwalk.core.XWalkGeolocationPermissions;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -338,7 +338,7 @@ public class CordovaChromeClient extends XWalkWebChromeClient {
      * @param origin
      * @param callback
      */
-    public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
+    public void onGeolocationPermissionsShowPrompt(String origin, XWalkGeolocationPermissions.Callback callback) {
         super.onGeolocationPermissionsShowPrompt(origin, callback);
         callback.invoke(origin, true, false);
     }
