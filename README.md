@@ -36,11 +36,12 @@ Requires
 - Java JDK 1.5 or greater
 - Apache ANT 1.8.0 or greater
 - Android SDK [http://developer.android.com](http://developer.android.com)
+- Python 2.6 or greater
 
 Setup Crosswalk Dependency
 ---
 
-Please refer to [Setup Crosswalk Dependency](https://github.com/otcshare/cordova-xwalk-android/wiki/setup-cordova-xwalk-android).
+Please refer to [Setup Crosswalk Dependency](https://github.com/crosswalk-project/crosswalk-cordova-android/wiki/setup-cordova-xwalk-android).
  
 Cordova Android Developer Tools
 ---
