@@ -232,7 +232,7 @@ replaceInFile(MANIFEST_PATH, /__PACKAGE__/, PACKAGE);
 replaceInFile(MANIFEST_PATH, /__APILEVEL__/, API_LEVEL);
 
 // setup project dependency of app and cordova-xwalk-android
-REL_ROOT_PATH = getExecOutput('"'+PYTHON+'" -c "import os.path; print os.path.relpath(\''+ROOT+'\', \''+PROJECT_PATH+'\')"');
+REL_ROOT_PATH = getExecOutput('"'+PYTHON+'" -c "import os.path; print os.path.relpath(r\''+ROOT+'\', r\''+PROJECT_PATH+'\')"');
 if (fso.FolderExists(ROOT + '\\framework')) {
     exec('android.bat update lib-project --target "'+TARGET+'" -p "'+ROOT+'\\framework"');
     exec('android.bat update project --target "'+TARGET+'" -p "'+PROJECT_PATH+'" -l "'+REL_ROOT_PATH+'\\framework"');
