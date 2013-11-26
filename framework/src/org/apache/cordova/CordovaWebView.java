@@ -230,9 +230,6 @@ public class CordovaWebView extends XWalkView {
     @SuppressWarnings("deprecation")
     @SuppressLint("NewApi")
     private void setup() {
-    	// Enable remote debugging server
-    	enableRemoteDebugging();
-    	
         this.setInitialScale(0);
         this.setVerticalScrollBarEnabled(false);
         if (shouldRequestFocusOnInit()) {
