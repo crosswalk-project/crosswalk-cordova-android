@@ -41,7 +41,7 @@ Requires
 Setup Crosswalk Dependency
 ---
 
-Please refer to [Setup Crosswalk Dependency](https://github.com/crosswalk-project/crosswalk-cordova-android/wiki/setup-cordova-xwalk-android).
+Please refer to [Setup Crosswalk Dependency](https://crosswalk-project.org/#wiki/Setup-Development-Environment-Of-Crosswalk-Cordova-Android.
 
 Cordova Android Developer Tools
 ---
@@ -66,7 +66,6 @@ These commands live in a generated Cordova Android project. Any interactions wit
 
 Importing a Crosswalk-based Cordova Android Project into Eclipse
 ----
-Please use `./cordova/build` to build before import generated project into Eclipse.
 
 1. Import Crosswalk-based Cordova Android and XWalkCoreLibrary library projects by File > Import... > Existing Android Code Into Workspace. Point to `[path_to_cordova_xwalk_android]/framework` and click  `Finish`.
 2. Build `xwalk_core_library` and `Cordova` projects.
