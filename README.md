@@ -21,7 +21,7 @@
 Crosswalk-based Cordova Android
 ===
 
-Corsswalk-based Cordova Android is derived from [Cordova Android](https://github.com/apache/cordova-android) 
+Crosswalk-based Cordova Android is derived from [Cordova Android](https://github.com/apache/cordova-android) 
 and uses [Crosswalk](https://github.com/crosswalk-project/crosswalk) as the 
 HTML5 runtime. It is an Android application library that allows for Cordova-based
 projects to be built for the Android Platform. Cordova based applications are,
