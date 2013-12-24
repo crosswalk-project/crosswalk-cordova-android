@@ -74,6 +74,7 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
         shell.cp('-f', path.join(ROOT, 'framework', 'project.properties'), nestedCordovaLibPath);
         shell.cp('-f', path.join(ROOT, 'framework', 'build.gradle'), nestedCordovaLibPath);
         shell.cp('-r', path.join(ROOT, 'framework', 'src'), nestedCordovaLibPath);
+        shell.cp('-r', path.join(ROOT, 'framework', 'xwalk_core_library'), nestedCordovaLibPath);
         // Create an eclipse project file and set the name of it to something unique.
         // Without this, you can't import multiple CordovaLib projects into the same workspace.
         var eclipseProjectFilePath = path.join(nestedCordovaLibPath, '.project');
