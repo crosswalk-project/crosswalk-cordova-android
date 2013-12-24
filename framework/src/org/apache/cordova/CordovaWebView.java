@@ -232,7 +232,8 @@ public class CordovaWebView extends XWalkView {
         // We keep this disabled because we use or shim to get around DOM_EXCEPTION_ERROR_16
         String databasePath = getContext().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         //settings.setDatabaseEnabled(true);
-        settings.setDatabasePath(databasePath);
+        //TODO: bring it back when it's ready in the XWalk.
+        //settings.setDatabasePath(databasePath);
         
         
         //Determine whether we're in debug or release mode, and turn on Debugging!
