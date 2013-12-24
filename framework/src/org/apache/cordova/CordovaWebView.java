@@ -275,7 +275,8 @@ public class CordovaWebView extends XWalkView {
         // We keep this disabled because we use or shim to get around DOM_EXCEPTION_ERROR_16
         String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         //settings.setDatabaseEnabled(true);
-        settings.setDatabasePath(databasePath);
+        //TODO: bring it back when it's ready in the XWalk.
+        //settings.setDatabasePath(databasePath);
         
         
         //Determine whether we're in debug or release mode, and turn on Debugging!
@@ -289,7 +290,8 @@ public class CordovaWebView extends XWalkView {
             if((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 &&  
                 android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT)
             {
-                setWebContentsDebuggingEnabled(true);
+                //TODO: bring it back when it's ready in the XWalk.
+                //setWebContentsDebuggingEnabled(true);
             }
         } catch (IllegalArgumentException e) {
             Log.d(TAG, "You have one job! To turn on Remote Web Debugging! YOU HAVE FAILED! ");
