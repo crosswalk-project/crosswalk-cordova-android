@@ -37,10 +37,10 @@ import android.view.View;
 //import android.webkit.SslErrorHandler;
 //import android.webkit.WebView;
 //import android.webkit.WebViewClient;
-import org.xwalk.core.HttpAuthHandler;
-import org.xwalk.core.SslErrorHandler;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkClient;
+import org.xwalk.core.XWalkHttpAuthHandler;
+import org.xwalk.core.SslErrorHandler;
 
 /**
  * This class is the WebViewClient that implements callbacks for our web view.
@@ -117,7 +117,7 @@ public class CordovaWebViewClient extends XWalkClient {
      * @param realm
      */
     @Override
-    public void onReceivedHttpAuthRequest(XWalkView view, HttpAuthHandler handler, String host, String realm) {
+    public void onReceivedHttpAuthRequest(XWalkView view, XWalkHttpAuthHandler handler, String host, String realm) {
 
         // Get the authentication token
         AuthenticationToken token = this.getAuthenticationToken(host, realm);
