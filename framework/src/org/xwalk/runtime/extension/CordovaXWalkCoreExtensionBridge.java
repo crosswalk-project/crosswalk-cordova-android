@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.xwalk.runtime;
+package org.xwalk.runtime.extension;
 
 import org.xwalk.runtime.extension.XWalkExtension;
 
@@ -11,8 +11,7 @@ import org.xwalk.runtime.extension.XWalkExtension;
  */
 public class CordovaXWalkCoreExtensionBridge extends XWalkCoreExtensionBridge {
 
-    public CordovaXWalkCoreExtensionBridge(XWalkExtension extension,
-            XWalkRuntimeViewProvider provider) {
-        super(extension, provider);
+    public CordovaXWalkCoreExtensionBridge(XWalkExtension extension) {
+        super(extension);
     }
 }
