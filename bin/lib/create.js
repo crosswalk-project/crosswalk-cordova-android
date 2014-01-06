@@ -86,6 +86,7 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
 
 function runAndroidUpdate(projectPath, target_api, shared) {
     var targetFrameworkDir = getFrameworkDir(projectPath, shared);
+    exec('android update lib-project -p "' + targetFrameworkDir + '" --target ' + target_api);
     return exec('android update project --subprojects --path "' + projectPath + '" --target ' + target_api + ' --library "' + path.relative(projectPath, targetFrameworkDir) + '"');
 }
 
