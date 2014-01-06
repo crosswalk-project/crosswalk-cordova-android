@@ -24,7 +24,8 @@ var shell = require('shelljs'),
     path  = require('path'),
     fs    = require('fs'),
     check_reqs = require('./check_reqs'),
-    ROOT    = path.join(__dirname, '..', '..');
+    ROOT    = path.join(__dirname, '..', '..'),
+    XWALK_LIBRARY_PATH= path.join(ROOT, 'framework', 'xwalk_core_library');
 
 // Returns a promise.
 function exec(command, opt_cwd) {
@@ -72,6 +73,7 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
         shell.cp('-f', path.join(ROOT, 'framework', 'AndroidManifest.xml'), nestedCordovaLibPath);
         shell.cp('-f', path.join(ROOT, 'framework', 'project.properties'), nestedCordovaLibPath);
         shell.cp('-r', path.join(ROOT, 'framework', 'src'), nestedCordovaLibPath);
+        shell.cp('-r', path.join(ROOT, 'framework', 'xwalk_core_library'), nestedCordovaLibPath);
         // Create an eclipse project file and set the name of it to something unique.
         // Without this, you can't import multiple CordovaLib projects into the same workspace.
         var eclipseProjectFilePath = path.join(nestedCordovaLibPath, '.project');
@@ -144,6 +146,14 @@ exports.createProject = function(project_path, package_name, project_name, proje
         return Q.reject('Package name must look like: com.company.Name');
     }
 
+    // prepare xwalk_core_library
+    if(fs.existsSync(XWALK_LIBRARY_PATH)) {
+        exec('android update lib-project --path "' + XWALK_LIBRARY_PATH + '" --target "' + target_api + '"' )
+    } else {
+        // TODO(wang16): download xwalk core library here
+        return Q.reject('No XWalk Library Project found. Please download it and extract it to $XWALK_LIBRARY_PATH')
+    }
+
     // Check that requirements are met and proper targets are installed
     return check_reqs.run()
     .then(function() {
@@ -162,6 +172,9 @@ exports.createProject = function(project_path, package_name, project_name, proje
             shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
             // Manually create directories that would be empty within the template (since git doesn't track directories).
             shell.mkdir(path.join(project_path, 'libs'));
+
+            // copy assets from xwalk core library
+            shell.cp('-r', path.join(XWALK_LIBRARY_PATH, 'assets'), project_path);
 
             // copy cordova.js, cordova.jar and res/xml
             shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
