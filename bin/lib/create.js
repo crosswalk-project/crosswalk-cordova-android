@@ -118,6 +118,9 @@ function writeProjectProperties(projectPath, target_api, shared) {
         data += 'android.library.reference.' + (i+1) + '=' + subProjects[i] + '\n';
     }
     fs.writeFileSync(dstPath, data);
+
+    var targetFrameworkDir = getFrameworkDir(projectPath, shared);
+    exec('android update lib-project -p "' + targetFrameworkDir + '" --target ' + target_api);
 }
 
 function copyBuildRules(projectPath) {
