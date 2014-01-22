@@ -54,7 +54,6 @@ public class ErrorUrlTest extends ActivityInstrumentationTestCase2<errorurl> {
       assertNotNull(testView);
   }
   
-  /* TODO(Junmin): fix this case.
   public void testUrl() throws Throwable
   {
     sleep();
@@ -69,7 +68,6 @@ public class ErrorUrlTest extends ActivityInstrumentationTestCase2<errorurl> {
         }
     });
   }
-  */
   
 
   private void sleep() {
