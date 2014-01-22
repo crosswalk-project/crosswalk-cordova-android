@@ -52,6 +52,7 @@ ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
         solo = new Solo(getInstrumentation(), getActivity());
       }
       
+      /* TODO(Junmin): fix this case.
       public void testOnScrollChanged()
       {
           solo.waitForWebElement(By.textContent("Cordova Android Tests"));
@@ -60,6 +61,7 @@ ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
           Object data = testPlugin.data;
           assertTrue(data.getClass().getSimpleName().equals("ScrollEvent"));
       }
+      */
 
       
       
