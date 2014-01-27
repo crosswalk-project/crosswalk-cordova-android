@@ -18,6 +18,12 @@
 */
 package org.apache.cordova.test.junit;
 
+/* Because this test case depends on the third party library "robotium",
+ * which implement its internals heavily relying on Android WebView.
+ * So disable this test case for XWalkView.
+ * Please refer robotium's internal detail at:
+ * https://github.com/RobotiumTech/robotium.
+
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.ScrollEvent;
@@ -52,7 +58,6 @@ ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
         solo = new Solo(getInstrumentation(), getActivity());
       }
       
-      /* TODO(Junmin): fix this case.
       public void testOnScrollChanged()
       {
           solo.waitForWebElement(By.textContent("Cordova Android Tests"));
@@ -61,8 +66,6 @@ ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
           Object data = testPlugin.data;
           assertTrue(data.getClass().getSimpleName().equals("ScrollEvent"));
       }
-      */
-
       
       
       private void sleep() {
@@ -72,4 +75,4 @@ ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
             fail("Unexpected Timeout");
           }
         }
-}
+}*/
