@@ -38,6 +38,7 @@ import org.xwalk.core.JsResult;
 import android.webkit.ValueCallback;
 //import android.webkit.WebChromeClient;
 import org.xwalk.core.XWalkWebChromeClient;
+import org.xwalk.core.client.XWalkDefaultWebChromeClient;
 import android.webkit.WebStorage;
 //import android.webkit.WebView;
 import org.xwalk.core.XWalkView;
@@ -58,7 +59,7 @@ import android.widget.RelativeLayout;
  * @see CordovaWebViewClient
  * @see CordovaWebView
  */
-public class CordovaChromeClient extends XWalkWebChromeClient {
+public class CordovaChromeClient extends XWalkDefaultWebChromeClient {
 
     public static final int FILECHOOSER_RESULTCODE = 5173;
     private String TAG = "CordovaLog";
@@ -74,10 +75,12 @@ public class CordovaChromeClient extends XWalkWebChromeClient {
     
     @Deprecated
     public CordovaChromeClient(CordovaInterface cordova) {
+        super(cordova.getActivity(), null);
         this.cordova = cordova;
     }
 
     public CordovaChromeClient(CordovaInterface ctx, CordovaWebView app) {
+        super(ctx.getActivity(), app);
         this.cordova = ctx;
         this.appView = app;
     }
