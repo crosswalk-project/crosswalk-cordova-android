@@ -656,7 +656,10 @@ public class CordovaWebView extends XWalkView {
         // If back key
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             // A custom view is currently displayed  (e.g. playing a video)
-            if(mCustomView != null) {
+            if (this.isFullscreen()) {
+                this.exitFullscreen();
+                return true;
+            } else if (mCustomView != null) {
                 this.hideCustomView();
                 return true;
             } else {
