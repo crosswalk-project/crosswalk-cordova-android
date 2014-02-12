@@ -722,8 +722,12 @@ public class CordovaWebView extends XWalkView {
         // If back key
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             // A custom view is currently displayed  (e.g. playing a video)
-            if(mCustomView != null) {
+            if (this.isFullscreen()) {
+                this.exitFullscreen();
+                return true;
+            } else if (mCustomView != null) {
                 this.hideCustomView();
+                return true;
             } else {
                 // The webview is currently displayed
                 // If back key is bound, then send event to JavaScript
@@ -742,6 +746,7 @@ public class CordovaWebView extends XWalkView {
                     	//return false;
                     	// If they hit back button when app is initializing, app should exit instead of hang until initialization (CB2-458)
                     	this.cordova.getActivity().finish();
+                    	return false;
                     }
                 }
             }
