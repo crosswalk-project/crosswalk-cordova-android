@@ -58,10 +58,7 @@ import org.xwalk.core.WebBackForwardList;
 import org.xwalk.core.WebHistoryItem;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkWebChromeClient;
-import org.xwalk.core.XWalkClient;
 import org.xwalk.core.XWalkSettings;
-import org.xwalk.runtime.extension.CordovaXWalkCoreExtensionBridge;
-import org.xwalk.runtime.extension.XWalkExtensionManager;
 
 /*
  * This class is our web view.
@@ -78,8 +75,6 @@ public class CordovaWebView extends XWalkView {
 
     public PluginManager pluginManager;
     private boolean paused;
-
-    private XWalkExtensionManager extensionManager;
 
     private BroadcastReceiver receiver;
 
@@ -175,8 +170,6 @@ public class CordovaWebView extends XWalkView {
         pluginManager.init();
         initWebViewSettings();
         exposeJsInterface();
-        extensionManager = new XWalkExtensionManager(this.cordova.getActivity(), this.cordova.getActivity());
-        extensionManager.loadExtensions();
     }
 
     @SuppressWarnings("deprecation")
@@ -768,15 +761,12 @@ public class CordovaWebView extends XWalkView {
             this.pluginManager.onPause(keepRunning);
         }
 
-        if (this.extensionManager != null) {
-            this.extensionManager.onPause();
-        }
-
         // If app doesn't want to run in background
         if (!keepRunning) {
             // Pause JavaScript timers (including setInterval)
             this.pauseTimers();
         }
+        this.onPause();
         paused = true;
    
     }
@@ -790,12 +780,9 @@ public class CordovaWebView extends XWalkView {
             this.pluginManager.onResume(keepRunning);
         }
 
-        if (this.extensionManager != null) {
-            this.extensionManager.onResume();
-        }
-
         // Resume JavaScript timers (including setInterval)
         this.resumeTimers();
+        this.onResume();
         paused = false;
     }
     
@@ -815,10 +802,6 @@ public class CordovaWebView extends XWalkView {
             this.pluginManager.onDestroy();
         }
 
-        if (this.extensionManager != null) {
-            this.extensionManager.onDestroy();
-        }
-        
         // unregister the receiver
         if (this.receiver != null) {
             try {
@@ -827,6 +810,7 @@ public class CordovaWebView extends XWalkView {
                 Log.e(TAG, "Error unregistering configuration receiver: " + e.getMessage(), e);
             }
         }
+        this.onDestroy();
     }
     
     @Override
