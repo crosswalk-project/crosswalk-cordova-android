@@ -799,12 +799,15 @@ public class CordovaWebView extends XWalkView {
         }
     }
     
-    public void onNewIntent(Intent intent)
+    @Override
+    public boolean onNewIntent(Intent intent)
     {
+        if (super.onNewIntent(intent)) return true;
         //Forward to plugins
         if (this.pluginManager != null) {
             this.pluginManager.onNewIntent(intent);
         }
+        return false;
     }
     
     public boolean isPaused()
