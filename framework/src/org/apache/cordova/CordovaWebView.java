@@ -215,8 +215,7 @@ public class CordovaWebView extends XWalkView {
         
         //Determine whether we're in debug or release mode, and turn on Debugging!
         ApplicationInfo appInfo = getContext().getApplicationContext().getApplicationInfo();
-        if ((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 &&
-            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+        if ((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
             enableRemoteDebugging();
         }
         
