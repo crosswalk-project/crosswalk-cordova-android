@@ -42,7 +42,7 @@ import org.xwalk.core.JsResult;
 import android.webkit.ValueCallback;
 //import android.webkit.WebChromeClient;
 import org.xwalk.core.XWalkWebChromeClient;
-import org.xwalk.core.client.XWalkDefaultWebChromeClient;
+import org.xwalk.core.XWalkDefaultWebChromeClient;
 import android.webkit.WebStorage;
 //import android.webkit.WebView;
 import org.xwalk.core.XWalkView;
