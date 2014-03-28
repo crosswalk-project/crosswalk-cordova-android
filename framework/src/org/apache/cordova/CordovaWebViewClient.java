@@ -35,6 +35,7 @@ import android.net.http.SslError;
 import android.view.View;
 //import android.webkit.HttpAuthHandler;
 //import android.webkit.SslErrorHandler;
+import android.webkit.ValueCallback;
 //import android.webkit.WebView;
 //import android.webkit.WebViewClient;
 import org.chromium.net.NetError;
@@ -410,7 +411,7 @@ public class CordovaWebViewClient extends XWalkClient {
      */
     @TargetApi(8)
     @Override
-    public void onReceivedSslError(XWalkView view, SslErrorHandler handler, SslError error) {
+    public void onReceivedSslError(XWalkView view, ValueCallback<Boolean> callback, SslError error) {
 
         final String packageName = this.cordova.getActivity().getPackageName();
         final PackageManager pm = this.cordova.getActivity().getPackageManager();
@@ -420,15 +421,15 @@ public class CordovaWebViewClient extends XWalkClient {
             appInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
             if ((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
                 // debug = true
-                handler.proceed();
+                callback.onReceiveValue(true);
                 return;
             } else {
                 // debug = false
-                super.onReceivedSslError(view, handler, error);
+                super.onReceivedSslError(view, callback, error);
             }
         } catch (NameNotFoundException e) {
             // When it doubt, lock it out!
-            super.onReceivedSslError(view, handler, error);
+            super.onReceivedSslError(view, callback, error);
         }
     }
 
