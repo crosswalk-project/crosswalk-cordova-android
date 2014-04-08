@@ -47,7 +47,6 @@ import org.chromium.net.NetError;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkClient;
 import org.xwalk.core.XWalkHttpAuthHandler;
-import org.xwalk.core.SslErrorHandler;
 
 /**
  * This class is the WebViewClient that implements callbacks for our web view.
