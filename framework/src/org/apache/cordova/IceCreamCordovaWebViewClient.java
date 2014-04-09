@@ -46,7 +46,7 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
     }
 
     @Override
-    public WebResourceResponse shouldInterceptRequest(XWalkView view, String url) {
+    public WebResourceResponse shouldInterceptLoadRequest(XWalkView view, String url) {
         try {
             // Check the against the white-list.
             if ((url.startsWith("http:") || url.startsWith("https:")) && !Config.isUrlWhiteListed(url)) {
