@@ -205,7 +205,7 @@ public class App extends CordovaPlugin {
     public void clearHistory() {
         cordova.getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                webView.clearHistory();
+                webView.getNavigationHistory().clear();
             }
         });
     }

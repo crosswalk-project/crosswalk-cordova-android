@@ -47,7 +47,7 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
     }
 
     @Override
-    public WebResourceResponse shouldInterceptRequest(XWalkView view, String url) {
+    public WebResourceResponse shouldInterceptLoadRequest(XWalkView view, String url) {
         try {
             // Check the against the whitelist and lock out access to the WebView directory
             // Changing this will cause problems for your application

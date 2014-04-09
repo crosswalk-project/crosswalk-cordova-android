@@ -401,7 +401,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     @Deprecated // Call method on appView directly.
     public void clearHistory() {
-        this.appView.clearHistory();
+        this.appView.getNavigationHistory().clear();
     }
 
     /**
@@ -516,7 +516,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected void onPause() {
         super.onPause();
         if (this.appView != null)
-            this.appView.onPause();
+            this.appView.onHide();
 
         LOG.d(TAG, "Paused the application!");
 
@@ -552,7 +552,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected void onResume() {
         super.onResume();
         if (this.appView != null)
-            this.appView.onResume();
+            this.appView.onShow();
+
         LOG.d(TAG, "Resuming the App");
         
         if (this.activityState == ACTIVITY_STARTING) {

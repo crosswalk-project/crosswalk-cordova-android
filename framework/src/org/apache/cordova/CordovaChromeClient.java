@@ -19,12 +19,13 @@
 package org.apache.cordova;
 
 import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.LOG;
+//import org.apache.cordova.LOG;
 
-import android.annotation.TargetApi;
+//import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,24 +35,16 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.webkit.ConsoleMessage;
-//import android.webkit.JsPromptResult;
-//import android.webkit.JsResult;
-import org.xwalk.core.JsPromptResult;
-import org.xwalk.core.JsResult;
 import android.webkit.ValueCallback;
-//import android.webkit.WebChromeClient;
-import org.xwalk.core.XWalkWebChromeClient;
-import org.xwalk.core.XWalkDefaultWebChromeClient;
-import android.webkit.WebStorage;
-//import android.webkit.WebView;
-import org.xwalk.core.XWalkView;
-import org.xwalk.core.XWalkGeolocationPermissions;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import org.xwalk.core.XWalkJavascriptResult;
+import org.xwalk.core.XWalkWebChromeClient;
+import org.xwalk.core.XWalkUIClientImpl;
+import org.xwalk.core.XWalkView;
 /**
  * This class is the WebChromeClient that implements callbacks for our web view.
  * The kind of callbacks that happen here are on the chrome outside the document,
@@ -63,20 +56,18 @@ import android.widget.RelativeLayout;
  * @see CordovaWebViewClient
  * @see CordovaWebView
  */
-public class CordovaChromeClient extends XWalkDefaultWebChromeClient {
+public class CordovaChromeClient extends XWalkUIClientImpl {
 
     public static final int FILECHOOSER_RESULTCODE = 5173;
-    private String TAG = "CordovaLog";
-    private long MAX_QUOTA = 100 * 1024 * 1024;
     protected CordovaInterface cordova;
     protected CordovaWebView appView;
-
-    // the video progress view
-    private View mVideoProgressView;
     
     //Keep track of last AlertDialog showed
     private AlertDialog lastHandledDialog;
 
+    // File Chooser
+    public ValueCallback<Uri> mUploadMessage;
+    
     @Deprecated
     public CordovaChromeClient(CordovaInterface cordova) {
         super(cordova.getActivity(), null);
@@ -87,11 +78,32 @@ public class CordovaChromeClient extends XWalkDefaultWebChromeClient {
         super(ctx.getActivity(), app);
         this.cordova = ctx;
         this.appView = app;
+        this.appView.setXWalkWebChromeClient(new CordovaWebChromeClient(ctx.getActivity(), app));
     }
 
     @Deprecated
     public void setWebView(CordovaWebView view) {
         this.appView = view;
+    }
+
+    @Override
+    public boolean onJavascriptModalDialog(XWalkView view, JavascriptMessageType type, String url,
+            String message, String defaultValue, XWalkJavascriptResult result) {
+        switch(type) {
+            case JAVASCRIPT_ALERT:
+                return onJsAlert(view, url, message, result);
+            case JAVASCRIPT_CONFIRM:
+                return onJsConfirm(view, url, message, result);
+            case JAVASCRIPT_PROMPT:
+                return onJsPrompt(view, url, message, defaultValue, result);
+            case JAVASCRIPT_BEFOREUNLOAD:
+                // Reuse onJsConfirm to show the dialog.
+                return onJsConfirm(view, url, message, result);
+            default:
+                break;
+        }
+        assert(false);
+        return false;
     }
 
     /**
@@ -103,8 +115,8 @@ public class CordovaChromeClient extends XWalkDefaultWebChromeClient {
      * @param result
      * @see Other implementation in the Dialogs plugin.
      */
-    @Override
-    public boolean onJsAlert(XWalkView view, String url, String message, final JsResult result) {
+    private boolean onJsAlert(XWalkView view, String url, String message,
+            final XWalkJavascriptResult result) {
         AlertDialog.Builder dlg = new AlertDialog.Builder(this.cordova.getActivity());
         dlg.setMessage(message);
         dlg.setTitle("Alert");
@@ -147,8 +159,8 @@ public class CordovaChromeClient extends XWalkDefaultWebChromeClient {
      * @param result
      * @see Other implementation in the Dialogs plugin.
      */
-    @Override
-    public boolean onJsConfirm(XWalkView view, String url, String message, final JsResult result) {
+    private boolean onJsConfirm(XWalkView view, String url, String message,
+            final XWalkJavascriptResult result) {
         AlertDialog.Builder dlg = new AlertDialog.Builder(this.cordova.getActivity());
         dlg.setMessage(message);
         dlg.setTitle("Confirm");
@@ -197,15 +209,14 @@ public class CordovaChromeClient extends XWalkDefaultWebChromeClient {
      *
      * @see Other implementation in the Dialogs plugin.
      */
-    @Override
-    public boolean onJsPrompt(XWalkView view, String origin, String message, String defaultValue, JsPromptResult result) {
+    private boolean onJsPrompt(XWalkView view, String origin, String message, String defaultValue, XWalkJavascriptResult result) {
         // Unlike the @JavascriptInterface bridge, this method is always called on the UI thread.
         String handledRet = appView.bridge.promptOnJsPrompt(origin, message, defaultValue);
         if (handledRet != null) {
-            result.confirm(handledRet);
+            result.confirmWithResult(handledRet);
         } else {
             // Returning false would also show a dialog, but the default one shows the origin (ugly).
-            final JsPromptResult res = result;
+            final XWalkJavascriptResult res = result;
             AlertDialog.Builder dlg = new AlertDialog.Builder(this.cordova.getActivity());
             dlg.setMessage(message);
             final EditText input = new EditText(this.cordova.getActivity());
@@ -218,7 +229,7 @@ public class CordovaChromeClient extends XWalkDefaultWebChromeClient {
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             String usertext = input.getText().toString();
-                            res.confirm(usertext);
+                            res.confirmWithResult(usertext);
                         }
                     });
             dlg.setNegativeButton(android.R.string.cancel,
@@ -232,63 +243,19 @@ public class CordovaChromeClient extends XWalkDefaultWebChromeClient {
         return true;
     }
 
-    /**
-     * Handle database quota exceeded notification.
-     */
-    @Override
-    public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
-            long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
-    {
-        LOG.d(TAG, "onExceededDatabaseQuota estimatedSize: %d  currentQuota: %d  totalUsedQuota: %d", estimatedSize, currentQuota, totalUsedQuota);
-        quotaUpdater.updateQuota(MAX_QUOTA);
+    // TODO(yongsheng): remove the dependency of Crosswalk internal class?
+    class CordovaWebChromeClient extends XWalkWebChromeClient {
+    // Don't add extra indents for keeping them with upstream to avoid
+    // merge conflicts.
+    private View mVideoProgressView;
+
+    private CordovaWebView appView;
+
+    CordovaWebChromeClient(Context context, CordovaWebView view) {
+        super(context, view);
+        appView = view;
     }
 
-    // console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
-    // Expect this to not compile in a future Android release!
-    @SuppressWarnings("deprecation")
-    @Override
-    public void onConsoleMessage(String message, int lineNumber, String sourceID)
-    {
-        //This is only for Android 2.1
-        if(android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.ECLAIR_MR1)
-        {
-            LOG.d(TAG, "%s: Line %d : %s", sourceID, lineNumber, message);
-            super.onConsoleMessage(message, lineNumber, sourceID);
-        }
-    }
-
-    @TargetApi(8)
-    @Override
-    public boolean onConsoleMessage(ConsoleMessage consoleMessage)
-    {
-        if (consoleMessage.message() != null)
-            LOG.d(TAG, "%s: Line %d : %s" , consoleMessage.sourceId() , consoleMessage.lineNumber(), consoleMessage.message());
-         return super.onConsoleMessage(consoleMessage);
-    }
-
-    @Override
-    /**
-     * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin.
-     *
-     * @param origin
-     * @param callback
-     */
-    public void onGeolocationPermissionsShowPrompt(String origin, XWalkGeolocationPermissions.Callback callback) {
-        super.onGeolocationPermissionsShowPrompt(origin, callback);
-        callback.invoke(origin, true, false);
-    }
-    
-    // API level 7 is required for this, see if we could lower this using something else
-    @Override
-    public void onShowCustomView(View view, XWalkWebChromeClient.CustomViewCallback callback) {
-        this.appView.showCustomView(view, callback);
-    }
-
-    @Override
-    public void onHideCustomView() {
-        this.appView.hideCustomView();
-    }
-    
     @Override
     /**
      * Ask the host application for a custom progress view to show while
@@ -317,11 +284,13 @@ public class CordovaChromeClient extends XWalkDefaultWebChromeClient {
         }
     return mVideoProgressView; 
     }
-
+    }
     // <input type=file> support:
     // openFileChooser() is for pre KitKat and in KitKat mr1 (it's known broken in KitKat).
     // For Lollipop, we use onShowFileChooser().
-    public void openFileChooser(ValueCallback<Uri> uploadMsg) {
+    @Override
+    public void openFileChooser(XWalkView view, ValueCallback<Uri> uploadMsg, String acceptType,
+            String capture) {
         this.openFileChooser(uploadMsg, "*/*");
     }
 
