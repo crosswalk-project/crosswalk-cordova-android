@@ -28,6 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -44,12 +45,13 @@ import android.webkit.WebResourceResponse;
 //import android.webkit.WebView;
 //import android.webkit.WebViewClient;
 import org.chromium.net.NetError;
+import org.xwalk.core.XWalkResourceClientImpl;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkClient;
 import org.xwalk.core.XWalkHttpAuthHandler;
 
 /**
- * This class is the WebViewClient that implements callbacks for our web view.
+ * This class is the XWalkResourceClient that implements callbacks for our web view.
  * The kind of callbacks that happen here are regarding the rendering of the
  * document instead of the chrome surrounding it, such as onPageStarted(), 
  * shouldOverrideUrlLoading(), etc. Related to but different than
@@ -60,13 +62,12 @@ import org.xwalk.core.XWalkHttpAuthHandler;
  * @see CordovaChromeClient
  * @see CordovaWebView
  */
-public class CordovaWebViewClient extends XWalkClient {
+public class CordovaWebViewClient extends XWalkResourceClientImpl {
 
 	private static final String TAG = "CordovaWebViewClient";
 	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
     CordovaWebView appView;
-    private boolean doClearHistory = false;
     boolean isCurrentlyLoading;
 
     // Success
@@ -111,6 +112,7 @@ public class CordovaWebViewClient extends XWalkClient {
      * @param cordova
      */
     public CordovaWebViewClient(CordovaInterface cordova) {
+        super(cordova.getActivity(), null);
         this.cordova = cordova;
     }
 
@@ -121,8 +123,10 @@ public class CordovaWebViewClient extends XWalkClient {
      * @param view
      */
     public CordovaWebViewClient(CordovaInterface cordova, CordovaWebView view) {
+        super(cordova.getActivity(), view);
         this.cordova = cordova;
         this.appView = view;
+        this.appView.setXWalkClient(new CordovaInternalViewClient(view, cordova));
     }
 
     /**
@@ -253,14 +257,53 @@ public class CordovaWebViewClient extends XWalkClient {
         }
     }
 
-    /**
-     * Give the host application a chance to take over the control when a new url
-     * is about to be loaded in the current WebView.
+     /**
+     * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable).
+     * The errorCode parameter corresponds to one of the ERROR_* constants.
      *
      * @param view          The WebView that is initiating the callback.
-     * @param url           The url to be loaded.
-     * @return              true to override, false for default behavior
+     * @param errorCode     The error code corresponding to an ERROR_* value.
+     * @param description   A String describing the error.
+     * @param failingUrl    The url that failed to load.
      */
+    @Override
+    public void onReceivedLoadError(XWalkView view, int errorCode, String description,
+            String failingUrl) {
+        LOG.d(TAG, "CordovaWebViewClient.onReceivedError: Error code=%s Description=%s URL=%s", errorCode, description, failingUrl);
+
+        // Clear timeout flag
+        this.appView.loadUrlTimeout++;
+
+        // Convert the XWalk error code to Cordova error code, which follows the Android spec,
+        // http://developer.android.com/reference/android/webkit/WebViewClient.html.
+        errorCode = convertErrorCode(errorCode);
+
+        // Handle error
+        JSONObject data = new JSONObject();
+        try {
+            data.put("errorCode", errorCode);
+            data.put("description", description);
+            data.put("url", failingUrl);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        this.appView.postMessage("onReceivedError", data);
+    }
+
+    // TODO(yongsheng): remove the dependency of Crosswalk internal class?
+    class CordovaInternalViewClient extends XWalkClient {
+    // Don't add extra indents for keeping them with upstream to avoid
+    // merge conflicts.
+    CordovaInterface cordova;
+    CordovaWebView appView;
+    private boolean doClearHistory = false;
+
+    CordovaInternalViewClient(CordovaWebView view, CordovaInterface ci) {
+        super(view.getActivity(), view);
+        cordova = ci;
+        appView = view;
+    }
+
 	@Override
     public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
     	// Check if it's an exec() bridge command message.
@@ -384,7 +427,7 @@ public class CordovaWebViewClient extends XWalkClient {
     public void onReceivedHttpAuthRequest(XWalkView view, XWalkHttpAuthHandler handler, String host, String realm) {
 
         // Get the authentication token
-        AuthenticationToken token = this.getAuthenticationToken(host, realm);
+        AuthenticationToken token = getAuthenticationToken(host, realm);
         if (token != null) {
             handler.proceed(token.getUserName(), token.getPassword());
         }
@@ -404,8 +447,8 @@ public class CordovaWebViewClient extends XWalkClient {
      * @param url           The url of the page.
      */
     @Override
-    public void onPageStarted(XWalkView view, String url, Bitmap favicon) {
-        super.onPageStarted(view, url, favicon);
+    public void onPageStarted(XWalkView view, String url) {
+        super.onPageStarted(view, url);
         isCurrentlyLoading = true;
         LOG.d(TAG, "onPageStarted(" + url + ")");
 
@@ -446,7 +489,7 @@ public class CordovaWebViewClient extends XWalkClient {
          * onPageStared is not called. Clearing the history at that point would break jQuery apps.
          */
         if (this.doClearHistory) {
-            view.clearHistory();
+            view.getNavigationHistory().clear();
             this.doClearHistory = false;
         }
 
@@ -478,42 +521,6 @@ public class CordovaWebViewClient extends XWalkClient {
         if (url.equals("about:blank")) {
             appView.postMessage("exit", null);
         }
-    }
-
-    /**
-     * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable).
-     * The errorCode parameter corresponds to one of the ERROR_* constants.
-     *
-     * @param view          The WebView that is initiating the callback.
-     * @param errorCode     The error code corresponding to an ERROR_* value.
-     * @param description   A String describing the error.
-     * @param failingUrl    The url that failed to load.
-     */
-    @Override
-    public void onReceivedError(XWalkView view, int errorCode, String description, String failingUrl) {
-        // Ignore error due to stopLoading().
-        if (!isCurrentlyLoading) {
-            return;
-        }
-        LOG.d(TAG, "CordovaWebViewClient.onReceivedError: Error code=%s Description=%s URL=%s", errorCode, description, failingUrl);
-
-        // Clear timeout flag
-        this.appView.loadUrlTimeout++;
-
-        // Convert the XWalk error code to Cordova error code, which follows the Android spec,
-        // http://developer.android.com/reference/android/webkit/WebViewClient.html.
-        errorCode = convertErrorCode(errorCode);
-
-        // Handle error
-        JSONObject data = new JSONObject();
-        try {
-            data.put("errorCode", errorCode);
-            data.put("description", description);
-            data.put("url", failingUrl);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        this.appView.postMessage("onReceivedError", data);
     }
 
     /**
@@ -550,6 +557,7 @@ public class CordovaWebViewClient extends XWalkClient {
         }
     }
 
+    }
 
     /**
      * Sets the authentication token.
