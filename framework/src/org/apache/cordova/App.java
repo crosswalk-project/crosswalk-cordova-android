@@ -168,7 +168,7 @@ public class App extends CordovaPlugin {
      * Clear page history for the app.
      */
     public void clearHistory() {
-        this.webView.clearHistory();
+        this.webView.getNavigationHistory().clear();
     }
 
     /**
