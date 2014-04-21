@@ -428,7 +428,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         // If loadingDialog property, then show the App loading dialog for first page of app
         String loading = null;
-        if ((this.appView == null) || !this.appView.canGoBack()) {
+        if ((this.appView == null) || !this.appView.getNavigationHistory().canGoBack()) {
             loading = this.getStringProperty("LoadingDialog", null);
         }
         else {
@@ -478,7 +478,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * Clear web history in this web view.
      */
     public void clearHistory() {
-        this.appView.clearHistory();
+        this.appView.getNavigationHistory().clear();
     }
 
     /**
@@ -671,6 +671,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     protected void onPause() {
         super.onPause();
+        if (this.appView != null)
+            this.appView.onHide();
 
         LOG.d(TAG, "Paused the application!");
 
@@ -708,6 +710,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     protected void onResume() {
         super.onResume();
+        if (this.appView != null)
+            this.appView.onShow();
         //Reload the configuration
         Config.init(this);
 
@@ -747,6 +751,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     public void onDestroy() {
         LOG.d(TAG, "CordovaActivity.onDestroy()");
         super.onDestroy();
+        if (this.appView != null)
+            this.appView.onDestroy();
 
         // hide the splash screen to avoid leaking a window
         this.removeSplashScreen();
@@ -872,6 +878,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         LOG.d(TAG, "Incoming Result");
         super.onActivityResult(requestCode, resultCode, intent);
+        if (this.appView != null)
+            this.appView.onActivityResult(requestCode, resultCode, intent);
         Log.d(TAG, "Request code = " + requestCode);
         if (appView != null && requestCode == CordovaChromeClient.FILECHOOSER_RESULTCODE) {
         	ValueCallback<Uri> mUploadMessage = this.appView.getWebChromeClient().getValueCallback();
