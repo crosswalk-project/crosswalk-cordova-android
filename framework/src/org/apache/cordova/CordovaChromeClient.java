@@ -43,7 +43,7 @@ import android.widget.RelativeLayout;
 
 import org.xwalk.core.XWalkJavascriptResult;
 import org.xwalk.core.XWalkWebChromeClient;
-import org.xwalk.core.XWalkUIClientImpl;
+import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
 /**
  * This class is the WebChromeClient that implements callbacks for our web view.
@@ -56,7 +56,7 @@ import org.xwalk.core.XWalkView;
  * @see CordovaWebViewClient
  * @see CordovaWebView
  */
-public class CordovaChromeClient extends XWalkUIClientImpl {
+public class CordovaChromeClient extends XWalkUIClient {
 
     public static final int FILECHOOSER_RESULTCODE = 5173;
     protected CordovaInterface cordova;
@@ -70,12 +70,12 @@ public class CordovaChromeClient extends XWalkUIClientImpl {
     
     @Deprecated
     public CordovaChromeClient(CordovaInterface cordova) {
-        super(cordova.getActivity(), null);
+        super(null);
         this.cordova = cordova;
     }
 
     public CordovaChromeClient(CordovaInterface ctx, CordovaWebView app) {
-        super(ctx.getActivity(), app);
+        super(app);
         this.cordova = ctx;
         this.appView = app;
         this.appView.setXWalkWebChromeClient(new CordovaWebChromeClient(ctx.getActivity(), app));
@@ -252,7 +252,7 @@ public class CordovaChromeClient extends XWalkUIClientImpl {
     private CordovaWebView appView;
 
     CordovaWebChromeClient(Context context, CordovaWebView view) {
-        super(context, view);
+        super(view);
         appView = view;
     }
 
