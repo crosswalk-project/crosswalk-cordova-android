@@ -91,8 +91,8 @@ function runAndroidUpdate(projectPath, target_api, shared) {
 }
 
 function copyAntRules(projectPath) {
-    var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
-    shell.cp('-f', path.join(srcDir, 'custom_rules.xml'), projectPath);
+    //var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
+    //shell.cp('-f', path.join(srcDir, 'custom_rules.xml'), projectPath);
 }
 
 function copyScripts(projectPath) {
