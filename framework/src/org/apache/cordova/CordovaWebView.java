@@ -235,7 +235,7 @@ public class CordovaWebView extends XWalkView {
         //Determine whether we're in debug or release mode, and turn on Debugging!
         ApplicationInfo appInfo = getContext().getApplicationContext().getApplicationInfo();
         if ((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
-            XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
+            enableRemoteDebugging();
         }
         
         //settings.setGeolocationDatabasePath(databasePath);
@@ -254,16 +254,6 @@ public class CordovaWebView extends XWalkView {
         settings.setAppCacheEnabled(true);
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    private void enableRemoteDebugging() {
-        try {
-            WebView.setWebContentsDebuggingEnabled(true);
-        } catch (IllegalArgumentException e) {
-            Log.d(TAG, "You have one job! To turn on Remote Web Debugging! YOU HAVE FAILED! ");
-            e.printStackTrace();
-        }
-    }
-
     public CordovaChromeClient makeWebChromeClient(CordovaInterface cordova) {
         return new CordovaChromeClient(cordova, this);
     }
@@ -273,6 +263,10 @@ public class CordovaWebView extends XWalkView {
             return new CordovaWebViewClient(cordova, this);
         }
         return new IceCreamCordovaWebViewClient(cordova, this);
+    }
+    
+    public void enableRemoteDebugging() {
+        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
     }
 
 	/**
