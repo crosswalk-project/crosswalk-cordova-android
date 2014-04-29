@@ -286,7 +286,7 @@ public class CordovaWebView extends XWalkView {
             appInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
             
             if((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
-                XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
+                enableRemoteDebugging();
             }
         } catch (IllegalArgumentException e) {
             Log.d(TAG, "You have one job! To turn on Remote Web Debugging! YOU HAVE FAILED! ");
@@ -317,6 +317,10 @@ public class CordovaWebView extends XWalkView {
         exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
         exposeJsInterface();
+    }
+    
+    public void enableRemoteDebugging() {
+        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
     }
 
 	/**

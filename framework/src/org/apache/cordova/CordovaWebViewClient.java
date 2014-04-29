@@ -68,6 +68,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
 	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
     CordovaWebView appView;
+    CordovaInternalViewClient internalViewClient;
 
     // Success
     public static final int ERROR_OK = 0;
@@ -125,7 +126,8 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         super(view);
         this.cordova = cordova;
         this.appView = view;
-        this.appView.setXWalkClient(new CordovaInternalViewClient(view, cordova));
+        this.internalViewClient = new CordovaInternalViewClient(view, cordova);
+        this.appView.setXWalkClient(internalViewClient);
     }
 
     /**
@@ -287,6 +289,14 @@ public class CordovaWebViewClient extends XWalkResourceClient {
             e.printStackTrace();
         }
         this.appView.postMessage("onReceivedError", data);
+    }
+    
+    public void onPageStarted(XWalkView view, String url) {
+        this.internalViewClient.onPageStarted(view, url);
+    }
+    
+    public void onPageFinished(XWalkView view, String url) {
+        this.internalViewClient.onPageFinished(view, url);
     }
 
     // TODO(yongsheng): remove the dependency of Crosswalk internal class?
