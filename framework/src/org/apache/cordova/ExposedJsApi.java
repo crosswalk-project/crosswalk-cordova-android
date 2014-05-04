@@ -18,8 +18,7 @@
 */
 package org.apache.cordova;
 
-//import android.webkit.JavascriptInterface;
-import org.chromium.content.browser.JavascriptInterface;
+import org.xwalk.core.JavascriptInterface;
 import org.json.JSONException;
 
 /**
