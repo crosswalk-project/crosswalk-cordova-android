@@ -194,6 +194,7 @@ public class CordovaWebView extends XWalkView {
         // TODO(yongsheng): remove settings?
         // Enable JavaScript
         XWalkSettings settings = this.getSettings();
+        if (settings == null) return;
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         // nhu: N/A
@@ -353,7 +354,9 @@ public class CordovaWebView extends XWalkView {
 
         if (recreatePlugins) {
             this.loadedUrl = url;
-            this.pluginManager.init();
+            if (this.pluginManager != null) {
+                this.pluginManager.init();
+            }
         }
 
         // Create a timeout timer for loadUrl
@@ -899,7 +902,9 @@ public class CordovaWebView extends XWalkView {
         boolean result = super.restoreState(savedInstanceState);
         Log.d(TAG, "WebView restoration crew now restoring!");
         //Initialize the plugin manager once more
-        this.pluginManager.init();
+        if (this.pluginManager != null) {
+            this.pluginManager.init();
+        }
         return result;
     }
 
