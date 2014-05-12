@@ -401,7 +401,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     @Deprecated // Call method on appView directly.
     public void clearHistory() {
-        this.appView.getNavigationHistory().clear();
+        if (this.appView.getNavigationHistory() != null) {
+            this.appView.getNavigationHistory().clear();
+        }
     }
 
     /**
