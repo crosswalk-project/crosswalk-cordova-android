@@ -428,7 +428,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         // If loadingDialog property, then show the App loading dialog for first page of app
         String loading = null;
-        if ((this.appView == null) || !this.appView.getNavigationHistory().canGoBack()) {
+        if ((this.appView == null) ||
+                this.appView.getNavigationHistory() == null ||
+                !this.appView.getNavigationHistory().canGoBack()) {
             loading = this.getStringProperty("LoadingDialog", null);
         }
         else {
@@ -478,7 +480,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * Clear web history in this web view.
      */
     public void clearHistory() {
-        this.appView.getNavigationHistory().clear();
+        if (this.appView.getNavigationHistory() != null) {
+            this.appView.getNavigationHistory().clear();
+        }
     }
 
     /**
