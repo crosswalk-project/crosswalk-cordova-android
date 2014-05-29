@@ -34,7 +34,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.Point;
+import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -42,6 +45,7 @@ import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -714,6 +718,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         super.onActivityResult(requestCode, resultCode, intent);
         if (this.appView != null)
             this.appView.onActivityResult(requestCode, resultCode, intent);
+
         CordovaPlugin callback = this.activityResultCallback;
         if(callback == null && initCallbackClass != null) {
             // The application was restarted, but had defined an initial callback
@@ -898,7 +903,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             return appView.onKeyUp(keyCode, event);
         } else {
             return super.onKeyUp(keyCode, event);
-    	}
+        }
     }
     
     /*

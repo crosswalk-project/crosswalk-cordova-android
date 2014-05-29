@@ -41,6 +41,9 @@ public class SplashScreenInternal extends CordovaPlugin {
     private static Dialog splashDialog;
     private static ProgressDialog spinnerDialog;
     private static boolean firstShow = true;
+    private OrientationEventListener splashOrientationListener;
+    private int mCurrentOrientation;
+    private LinearLayout splashLayout;
 
     @Override
     protected void pluginInitialize() {
@@ -134,9 +137,45 @@ public class SplashScreenInternal extends CordovaPlugin {
                 if (splashDialog != null && splashDialog.isShowing()) {
                     splashDialog.dismiss();
                     splashDialog = null;
+                    splashOrientationListener.disable();
+                    splashOrientationListener = null;
                 }
             }
         });
+    }
+
+    private int getScreenOrientation() {
+        // getResources().getConfiguration().orientation returns wrong value in some devices.
+        // Below is another way to calculate screen orientation.
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int orientation;
+        if (size.x < size.y) {
+            orientation = Configuration.ORIENTATION_PORTRAIT;
+        } else {
+            orientation = Configuration.ORIENTATION_LANDSCAPE;
+        }
+        return orientation;
+    }
+
+    private LinearLayout getSplashLayout() {
+        // Get reference to display
+        Display display = cordova.getActivity().getWindowManager().getDefaultDisplay();
+
+        LinearLayout root = new LinearLayout(webView.getContext());
+        root.setMinimumHeight(display.getHeight());
+        root.setMinimumWidth(display.getWidth());
+        root.setOrientation(LinearLayout.VERTICAL);
+
+        // TODO: Use the background color of the webview's parent instead of using the
+        // preference.
+        root.setBackgroundColor(preferences.getInteger("backgroundColor", Color.BLACK));
+        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
+        root.setBackgroundResource(drawableId);
+
+        return root;
     }
 
     /**
@@ -157,34 +196,38 @@ public class SplashScreenInternal extends CordovaPlugin {
 
         cordova.getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                // Get reference to display
-                Display display = cordova.getActivity().getWindowManager().getDefaultDisplay();
-                Context context = webView.getContext();
-
                 // Create the layout for the dialog
-                LinearLayout root = new LinearLayout(context);
-                root.setMinimumHeight(display.getHeight());
-                root.setMinimumWidth(display.getWidth());
-                root.setOrientation(LinearLayout.VERTICAL);
-
-                // TODO: Use the background color of the webview's parent instead of using the
-                // preference.
-                root.setBackgroundColor(preferences.getInteger("backgroundColor", Color.BLACK));
-                root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
-                root.setBackgroundResource(drawableId);
+                splashLayout = getSplashLayout();
 
                 // Create and show the dialog
-                splashDialog = new Dialog(context, android.R.style.Theme_Translucent_NoTitleBar);
+                splashDialog = new Dialog(webView.getContext(), android.R.style.Theme_Translucent_NoTitleBar);
                 // check to see if the splash screen should be full screen
                 if ((cordova.getActivity().getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
                         == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
                     splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 }
-                splashDialog.setContentView(root);
+                splashDialog.setContentView(splashLayout);
                 splashDialog.setCancelable(false);
                 splashDialog.show();
+
+                mCurrentOrientation = getScreenOrientation();
+                splashOrientationListener = new OrientationEventListener(that,
+                        SensorManager.SENSOR_DELAY_NORMAL) {
+                    public void onOrientationChanged(int ori) {
+                        if (splashDialog == null || !splashDialog.isShowing()) {
+                            return;
+                        }
+                        // Reset contentView of splashDialog when orientation changed.
+                        int orientation = getScreenOrientation();
+                        if (orientation != mCurrentOrientation) {
+                            splashLayout = getSplashLayout();
+                            splashDialog.setContentView(splashLayout);
+                            mCurrentOrientation = orientation;
+                        }
+                    }
+                };
+                splashOrientationListener.enable();
 
                 // Set Runnable to remove splash screen just in case
                 if (hideAfterDelay) {
