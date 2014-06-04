@@ -216,12 +216,9 @@ public class CordovaWebView extends XWalkView {
         // nhu: N/A
         //settings.setSaveFormData(false);
         //settings.setSavePassword(false);
-        
-        // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
-        // while we do this
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
-            Level16Apis.enableUniversalAccess(settings);
-        }
+
+        settings.setAllowUniversalAccessFromFileURLs(true);
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
             Level17Apis.setMediaPlaybackRequiresUserGesture(settings, false);
         }
@@ -833,15 +830,6 @@ public class CordovaWebView extends XWalkView {
     @Deprecated // This never did anything.
     public boolean hadKeyEvent() {
         return false;
-    }
-
-    // Wrapping these functions in their own class prevents warnings in adb like:
-    // VFY: unable to resolve virtual method 285: Landroid/webkit/WebSettings;.setAllowUniversalAccessFromFileURLs
-    @TargetApi(16)
-    private static final class Level16Apis {
-        static void enableUniversalAccess(XWalkSettings settings) {
-            settings.setAllowUniversalAccessFromFileURLs(true);
-        }
     }
 
     @TargetApi(17)
