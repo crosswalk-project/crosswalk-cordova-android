@@ -205,10 +205,7 @@ public class CordovaWebView extends XWalkView {
         //settings.setSaveFormData(false);
         //settings.setSavePassword(false);
         
-        // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
-        // while we do this
-        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-            Level16Apis.enableUniversalAccess(settings);
+        settings.setAllowUniversalAccessFromFileURLs(true);
         // Enable database
         // We keep this disabled because we use or shim to get around DOM_EXCEPTION_ERROR_16
         String databasePath = getContext().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
@@ -807,15 +804,6 @@ public class CordovaWebView extends XWalkView {
         return false;
     }
 
-    // Wrapping these functions in their own class prevents warnings in adb like:
-    // VFY: unable to resolve virtual method 285: Landroid/webkit/WebSettings;.setAllowUniversalAccessFromFileURLs
-    @TargetApi(16)
-    private static class Level16Apis {
-        static void enableUniversalAccess(XWalkSettings settings) {
-            settings.setAllowUniversalAccessFromFileURLs(true);
-        }
-    }
-    
     public void printBackForwardList() {
         XWalkNavigationHistory currentList = this.getNavigationHistory();
         int currentSize = currentList.size();
