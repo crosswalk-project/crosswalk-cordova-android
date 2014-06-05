@@ -912,8 +912,9 @@ public class CordovaWebView extends XWalkView {
     public boolean startOfHistory()
     {
         XWalkNavigationHistory currentList = this.getNavigationHistory();
+        if (currentList.size() == 0) return false;
         XWalkNavigationItem item = currentList.getItemAt(0);
-        if( item!=null){	// Null-fence in case they haven't called loadUrl yet (CB-2458)
+        if (item!=null){	// Null-fence in case they haven't called loadUrl yet (CB-2458)
 	        String url = item.getUrl();
 	        String currentUrl = this.getUrl();
 	        LOG.d(TAG, "The current URL is: " + currentUrl);
