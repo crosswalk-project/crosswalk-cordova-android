@@ -24,7 +24,8 @@ var shell = require('shelljs'),
     path  = require('path'),
     fs    = require('fs'),
     check_reqs = require('./check_reqs'),
-    ROOT    = path.join(__dirname, '..', '..');
+    ROOT    = path.join(__dirname, '..', '..'),
+    XWALK_LIBRARY_PATH= path.join(ROOT, 'framework', 'xwalk_core_library');
 
 // Returns a promise.
 function exec(command, opt_cwd) {
@@ -72,6 +73,7 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
         shell.cp('-f', path.join(ROOT, 'framework', 'AndroidManifest.xml'), nestedCordovaLibPath);
         shell.cp('-f', path.join(ROOT, 'framework', 'project.properties'), nestedCordovaLibPath);
         shell.cp('-r', path.join(ROOT, 'framework', 'src'), nestedCordovaLibPath);
+        shell.cp('-r', path.join(ROOT, 'framework', 'xwalk_core_library'), nestedCordovaLibPath);
         // Create an eclipse project file and set the name of it to something unique.
         // Without this, you can't import multiple CordovaLib projects into the same workspace.
         var eclipseProjectFilePath = path.join(nestedCordovaLibPath, '.project');
@@ -84,12 +86,13 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
 
 function runAndroidUpdate(projectPath, target_api, shared) {
     var targetFrameworkDir = getFrameworkDir(projectPath, shared);
+    exec('android update lib-project -p "' + targetFrameworkDir + '" --target ' + target_api);
     return exec('android update project --subprojects --path "' + projectPath + '" --target ' + target_api + ' --library "' + path.relative(projectPath, targetFrameworkDir) + '"');
 }
 
 function copyAntRules(projectPath) {
-    var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
-    shell.cp('-f', path.join(srcDir, 'custom_rules.xml'), projectPath);
+    //var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
+    //shell.cp('-f', path.join(srcDir, 'custom_rules.xml'), projectPath);
 }
 
 function copyScripts(projectPath) {
@@ -151,6 +154,14 @@ exports.createProject = function(project_path, package_name, project_name, proje
 
     if (project_name === 'CordovaActivity') {
         return Q.reject('Project name cannot be CordovaActivity');
+    }
+
+    // prepare xwalk_core_library
+    if(fs.existsSync(XWALK_LIBRARY_PATH)) {
+        exec('android update lib-project --path "' + XWALK_LIBRARY_PATH + '" --target "' + target_api + '"' )
+    } else {
+        // TODO(wang16): download xwalk core library here
+        return Q.reject('No XWalk Library Project found. Please download it and extract it to $XWALK_LIBRARY_PATH')
     }
 
     // Check that requirements are met and proper targets are installed

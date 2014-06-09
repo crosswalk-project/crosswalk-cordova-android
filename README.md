@@ -18,10 +18,12 @@
 # under the License.
 #
 -->
-Cordova Android
+Crosswalk-based Cordova Android
 ===
 
-Cordova Android is an Android application library that allows for Cordova-based
+Crosswalk-based Cordova Android is derived from [Cordova Android](https://github.com/apache/cordova-android) 
+and uses [Crosswalk](https://github.com/crosswalk-project/crosswalk) as the 
+HTML5 runtime. It is an Android application library that allows for Cordova-based
 projects to be built for the Android Platform. Cordova based applications are,
 at the core, applications written with web technology: HTML, CSS and JavaScript.
 
@@ -34,7 +36,12 @@ Requires
 - Java JDK 1.5 or greater
 - Apache Ant 1.8.0 or greater
 - Android SDK [http://developer.android.com](http://developer.android.com)
+- Python 2.6 or greater
 
+Setup Crosswalk Dependency
+---
+
+Please refer to [Setup Crosswalk Dependency](https://crosswalk-project.org/#wiki/Setup-Development-Environment-Of-Crosswalk-Cordova-Android.
 
 Cordova Android Developer Tools
 ---
@@ -57,27 +64,14 @@ These commands live in a generated Cordova Android project. Any interactions wit
     ./cordova/run   ........................ calls `build` then deploys to a connected Android device. If no Android device is detected, will launch an emulator and deploy to it.
     ./cordova/version ...................... returns the cordova-android version of the current project
 
-Importing a Cordova Android Project into Eclipse
+Importing a Crosswalk-based Cordova Android Project into Eclipse
 ----
 
-1. File > New > Project...
-2. Android > Android Project
-3. Create project from existing source (point to the generated app found in tmp/android)
-4. Right click on libs/cordova.jar and add to build path
-5. Right click on the project root: Run as > Run Configurations
-6. Click on the Target tab and select Manual (this way you can choose the emulator or device to build to)
-
-Building without the Tooling
----
-Note: The Developer Tools handle this.  This is only to be done if the tooling fails, or if
-you are developing directly against the framework.
-
-
-To create your `cordova.jar` file, run in the framework directory:
-
-    android update project -p . -t android-19
-    ant jar
-
+1. Import Crosswalk-based Cordova Android and XWalkCoreLibrary library projects by File > Import... > Existing Android Code Into Workspace. Point to `[path_to_cordova_xwalk_android]/framework` and click  `Finish`.
+2. Build `xwalk_core_library` and `Cordova` projects.
+3. Import generated project by File > Import... > Existing Android Code. Point to the generated app path.
+4. Right click on the project root: Run as > Run Configurations
+5. Click on the Target tab and select Manual (this way you can choose the emulator or device to build to)
 
 Running Tests
 ----

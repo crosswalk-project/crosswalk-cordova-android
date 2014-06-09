@@ -18,9 +18,11 @@
 */
 package org.apache.cordova;
 
-import android.webkit.JavascriptInterface;
+import org.xwalk.core.JavascriptInterface;
 import org.apache.cordova.PluginManager;
 import org.json.JSONException;
+
+import android.os.Looper;
 
 /**
  * Contains APIs that the JS can call. All functions in here should also have
@@ -41,6 +43,10 @@ import org.json.JSONException;
     public String exec(String service, String action, String callbackId, String arguments) throws JSONException {
         // If the arguments weren't received, send a message back to JS.  It will switch bridge modes and try again.  See CB-2666.
         // We send a message meant specifically for this case.  It starts with "@" so no other message can be encoded into the same string.
+        if (Looper.myLooper() == null) {
+            Looper.prepare();
+        }
+
         if (arguments == null) {
             return "@Null arguments.";
         }
