@@ -63,7 +63,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
     CordovaInterface cordova;
     CordovaWebView appView;
     CordovaUriHelper helper;
-    CordovaInternalViewClient internalViewClient;
+    private boolean doClearHistory = false;
     boolean isCurrentlyLoading;
 
     // Success
@@ -119,8 +119,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         this.cordova = cordova;
         this.appView = view;
         helper = new CordovaUriHelper(cordova, view);
-        this.internalViewClient = new CordovaInternalViewClient(view, cordova);
-        this.appView.setXWalkClient(internalViewClient);
+        this.appView.setXWalkClient(new CordovaInternalViewClient(view, cordova, this));
     }
 
     /**
@@ -268,72 +267,11 @@ public class CordovaWebViewClient extends XWalkResourceClient {
     }
     
     public void onPageStarted(XWalkView view, String url) {
-        this.internalViewClient.onPageStarted(view, url);
-    }
-    
-    public void onPageFinished(XWalkView view, String url) {
-        this.internalViewClient.onPageFinished(view, url);
-    }
-
-    // TODO(yongsheng): remove the dependency of Crosswalk internal class?
-    class CordovaInternalViewClient extends XWalkClient {
-    // Don't add extra indents for keeping them with upstream to avoid
-    // merge conflicts.
-    CordovaInterface cordova;
-    CordovaWebView appView;
-    private boolean doClearHistory = false;
-
-    CordovaInternalViewClient(CordovaWebView view, CordovaInterface ci) {
-        super(view);
-        cordova = ci;
-        appView = view;
-    }
-
-	@Override
-    public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
-        return helper.shouldOverrideUrlLoading(view, url);
-    }
-    
-    /**
-     * On received http auth request.
-     * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination
-     *
-     * @param view
-     * @param handler
-     * @param host
-     * @param realm
-     */
-    @Override
-    public void onReceivedHttpAuthRequest(XWalkView view, XWalkHttpAuthHandler handler, String host, String realm) {
-
-        // Get the authentication token
-        AuthenticationToken token = getAuthenticationToken(host, realm);
-        if (token != null) {
-            handler.proceed(token.getUserName(), token.getPassword());
-        }
-        else {
-            // Handle 401 like we'd normally do!
-            super.onReceivedHttpAuthRequest(view, handler, host, realm);
-        }
-    }
-
-    /**
-     * Notify the host application that a page has started loading.
-     * This method is called once for each main frame load so a page with iframes or framesets will call onPageStarted
-     * one time for the main frame. This also means that onPageStarted will not be called when the contents of an
-     * embedded frame changes, i.e. clicking a link whose target is an iframe.
-     *
-     * @param view          The webview initiating the callback.
-     * @param url           The url of the page.
-     */
-    @Override
-    public void onPageStarted(XWalkView view, String url) {
-        super.onPageStarted(view, url);
         isCurrentlyLoading = true;
         LOG.d(TAG, "onPageStarted(" + url + ")");
 
         // Flush stale messages.
-        this.appView.bridge.reset(url);
+        this.appView.jsMessageQueue.reset();
 
         // Broadcast message that page has loaded
         this.appView.postMessage("onPageStarted", url);
@@ -343,18 +281,8 @@ public class CordovaWebViewClient extends XWalkResourceClient {
             this.appView.pluginManager.onReset();
         }
     }
-
-    /**
-     * Notify the host application that a page has finished loading.
-     * This method is called only for main frame. When onPageFinished() is called, the rendering picture may not be updated yet.
-     *
-     *
-     * @param view          The webview initiating the callback.
-     * @param url           The url of the page.
-     */
-    @Override
+    
     public void onPageFinished(XWalkView view, String url) {
-        super.onPageFinished(view, url);
         // Ignore excessive calls.
         if (!isCurrentlyLoading) {
             return;
@@ -401,6 +329,78 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         if (url.equals("about:blank")) {
             appView.postMessage("exit", null);
         }
+    }
+
+    // TODO(yongsheng): remove the dependency of Crosswalk internal class?
+    class CordovaInternalViewClient extends XWalkClient {
+    // Don't add extra indents for keeping them with upstream to avoid
+    // merge conflicts.
+    CordovaInterface cordova;
+    CordovaWebView appView;
+    CordovaWebViewClient publicClient;
+
+    CordovaInternalViewClient(CordovaWebView view, CordovaInterface ci, CordovaWebViewClient client) {
+        super(view);
+        cordova = ci;
+        appView = view;
+        publicClient = client;
+    }
+
+	@Override
+    public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+        return helper.shouldOverrideUrlLoading(view, url);
+    }
+    
+    /**
+     * On received http auth request.
+     * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination
+     *
+     * @param view
+     * @param handler
+     * @param host
+     * @param realm
+     */
+    @Override
+    public void onReceivedHttpAuthRequest(XWalkView view, XWalkHttpAuthHandler handler, String host, String realm) {
+
+        // Get the authentication token
+        AuthenticationToken token = getAuthenticationToken(host, realm);
+        if (token != null) {
+            handler.proceed(token.getUserName(), token.getPassword());
+        }
+        else {
+            // Handle 401 like we'd normally do!
+            super.onReceivedHttpAuthRequest(view, handler, host, realm);
+        }
+    }
+
+    /**
+     * Notify the host application that a page has started loading.
+     * This method is called once for each main frame load so a page with iframes or framesets will call onPageStarted
+     * one time for the main frame. This also means that onPageStarted will not be called when the contents of an
+     * embedded frame changes, i.e. clicking a link whose target is an iframe.
+     *
+     * @param view          The webview initiating the callback.
+     * @param url           The url of the page.
+     */
+    @Override
+    public void onPageStarted(XWalkView view, String url) {
+        super.onPageStarted(view, url);
+        this.publicClient.onPageStarted(view, url);
+    }
+
+    /**
+     * Notify the host application that a page has finished loading.
+     * This method is called only for main frame. When onPageFinished() is called, the rendering picture may not be updated yet.
+     *
+     *
+     * @param view          The webview initiating the callback.
+     * @param url           The url of the page.
+     */
+    @Override
+    public void onPageFinished(XWalkView view, String url) {
+        super.onPageFinished(view, url);
+        this.publicClient.onPageFinished(view, url);
     }
 
     /**
