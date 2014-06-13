@@ -68,7 +68,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
 	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
     CordovaWebView appView;
-    CordovaInternalViewClient internalViewClient;
+    private boolean doClearHistory = false;
     boolean isCurrentlyLoading;
 
     // Success
@@ -127,8 +127,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         super(view);
         this.cordova = cordova;
         this.appView = view;
-        this.internalViewClient = new CordovaInternalViewClient(view, cordova);
-        this.appView.setXWalkClient(internalViewClient);
+        this.appView.setXWalkClient(new CordovaInternalViewClient(view, cordova, this));
     }
 
     /**
@@ -293,11 +292,68 @@ public class CordovaWebViewClient extends XWalkResourceClient {
     }
     
     public void onPageStarted(XWalkView view, String url) {
-        this.internalViewClient.onPageStarted(view, url);
+        isCurrentlyLoading = true;
+        LOG.d(TAG, "onPageStarted(" + url + ")");
+
+        // Flush stale messages.
+        this.appView.jsMessageQueue.reset();
+
+        // Broadcast message that page has loaded
+        this.appView.postMessage("onPageStarted", url);
+
+        // Notify all plugins of the navigation, so they can clean up if necessary.
+        if (this.appView.pluginManager != null) {
+            this.appView.pluginManager.onReset();
+        }
     }
     
     public void onPageFinished(XWalkView view, String url) {
-        this.internalViewClient.onPageFinished(view, url);
+        // Ignore excessive calls.
+        if (!isCurrentlyLoading) {
+            return;
+        }
+        isCurrentlyLoading = false;
+        LOG.d(TAG, "onPageFinished(" + url + ")");
+
+        /**
+         * Because of a timing issue we need to clear this history in onPageFinished as well as
+         * onPageStarted. However we only want to do this if the doClearHistory boolean is set to
+         * true. You see when you load a url with a # in it which is common in jQuery applications
+         * onPageStared is not called. Clearing the history at that point would break jQuery apps.
+         */
+        if (this.doClearHistory) {
+            view.getNavigationHistory().clear();
+            this.doClearHistory = false;
+        }
+
+        // Clear timeout flag
+        this.appView.loadUrlTimeout++;
+
+        // Broadcast message that page has loaded
+        this.appView.postMessage("onPageFinished", url);
+
+        // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
+        if (this.appView.getVisibility() == View.INVISIBLE) {
+            Thread t = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(2000);
+                        cordova.getActivity().runOnUiThread(new Runnable() {
+                            public void run() {
+                                appView.postMessage("spinner", "stop");
+                            }
+                        });
+                    } catch (InterruptedException e) {
+                    }
+                }
+            });
+            t.start();
+        }
+
+        // Shutdown if blank loaded
+        if (url.equals("about:blank")) {
+            appView.postMessage("exit", null);
+        }
     }
 
     // TODO(yongsheng): remove the dependency of Crosswalk internal class?
@@ -306,12 +362,13 @@ public class CordovaWebViewClient extends XWalkResourceClient {
     // merge conflicts.
     CordovaInterface cordova;
     CordovaWebView appView;
-    private boolean doClearHistory = false;
+    CordovaWebViewClient publicClient;
 
-    CordovaInternalViewClient(CordovaWebView view, CordovaInterface ci) {
+    CordovaInternalViewClient(CordovaWebView view, CordovaInterface ci, CordovaWebViewClient client) {
         super(view);
         cordova = ci;
         appView = view;
+        publicClient = client;
     }
 
 	@Override
@@ -459,19 +516,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
     @Override
     public void onPageStarted(XWalkView view, String url) {
         super.onPageStarted(view, url);
-        isCurrentlyLoading = true;
-        LOG.d(TAG, "onPageStarted(" + url + ")");
-
-        // Flush stale messages.
-        this.appView.jsMessageQueue.reset();
-
-        // Broadcast message that page has loaded
-        this.appView.postMessage("onPageStarted", url);
-
-        // Notify all plugins of the navigation, so they can clean up if necessary.
-        if (this.appView.pluginManager != null) {
-            this.appView.pluginManager.onReset();
-        }
+        this.publicClient.onPageStarted(view, url);
     }
 
     /**
@@ -485,52 +530,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
     @Override
     public void onPageFinished(XWalkView view, String url) {
         super.onPageFinished(view, url);
-        // Ignore excessive calls.
-        if (!isCurrentlyLoading) {
-            return;
-        }
-        isCurrentlyLoading = false;
-        LOG.d(TAG, "onPageFinished(" + url + ")");
-
-        /**
-         * Because of a timing issue we need to clear this history in onPageFinished as well as
-         * onPageStarted. However we only want to do this if the doClearHistory boolean is set to
-         * true. You see when you load a url with a # in it which is common in jQuery applications
-         * onPageStared is not called. Clearing the history at that point would break jQuery apps.
-         */
-        if (this.doClearHistory) {
-            view.getNavigationHistory().clear();
-            this.doClearHistory = false;
-        }
-
-        // Clear timeout flag
-        this.appView.loadUrlTimeout++;
-
-        // Broadcast message that page has loaded
-        this.appView.postMessage("onPageFinished", url);
-
-        // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
-        if (this.appView.getVisibility() == View.INVISIBLE) {
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        Thread.sleep(2000);
-                        cordova.getActivity().runOnUiThread(new Runnable() {
-                            public void run() {
-                                appView.postMessage("spinner", "stop");
-                            }
-                        });
-                    } catch (InterruptedException e) {
-                    }
-                }
-            });
-            t.start();
-        }
-
-        // Shutdown if blank loaded
-        if (url.equals("about:blank")) {
-            appView.postMessage("exit", null);
-        }
+        this.publicClient.onPageFinished(view, url);
     }
 
     /**
