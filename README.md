@@ -41,6 +41,7 @@ Requires
 Setup Crosswalk Dependency
 ---
 
+This is not a fix but the the following link is dead! And the Issues are disabled!!
 Please refer to [Setup Crosswalk Dependency](https://crosswalk-project.org/#wiki/Setup-Development-Environment-Of-Crosswalk-Cordova-Android.
 
 Cordova Android Developer Tools
