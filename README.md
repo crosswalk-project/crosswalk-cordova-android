@@ -41,7 +41,14 @@ Requires
 Setup Crosswalk Dependency
 ---
 
-Please refer to [Setup Crosswalk Dependency](https://crosswalk-project.org/#wiki/Setup-Development-Environment-Of-Crosswalk-Cordova-Android.
+1. Please download the crosswalk-webview for Android package from [Crosswalk download site](https://download.01.org/crosswalk/releases/crosswalk/android/).
+2. Unzip the crosswalk-webview package to a folder and create a link named `xwalk_core_library` under `framework` linking to that folder.
+
+For example, on Linux:
+
+    $cd /path/to/crosswalk-cordova-android/framework
+    $ln -s /path/to/crosswalk-webview-unzipped-folder/ xwalk_core_library
+
 
 Cordova Android Developer Tools
 ---
