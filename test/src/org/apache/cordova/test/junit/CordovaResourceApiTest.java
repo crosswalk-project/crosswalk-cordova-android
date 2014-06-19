@@ -28,6 +28,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.suitebuilder.annotation.Suppress;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -125,6 +126,7 @@ public class CordovaResourceApiTest extends ActivityInstrumentationTestCase2<Cor
         }
     }
 
+    @Suppress
     public void testValidContentUri() throws IOException
     {
         Uri contentUri = createTestImageContentUri();
