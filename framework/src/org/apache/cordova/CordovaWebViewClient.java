@@ -47,8 +47,10 @@ import android.webkit.WebResourceResponse;
 import org.chromium.net.NetError;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkView;
-import org.xwalk.core.XWalkClient;
-import org.xwalk.core.XWalkHttpAuthHandler;
+// FIXME(wang16): Remove internal dependency of crosswalk.
+import org.xwalk.core.internal.XWalkClient;
+import org.xwalk.core.internal.XWalkHttpAuthHandler;
+import org.xwalk.core.internal.XWalkViewInternal;
 
 /**
  * This class is the XWalkResourceClient that implements callbacks for our web view.
@@ -291,7 +293,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         this.appView.postMessage("onReceivedError", data);
     }
     
-    public void onPageStarted(XWalkView view, String url) {
+    public void onPageStarted(XWalkViewInternal view, String url) {
         isCurrentlyLoading = true;
         LOG.d(TAG, "onPageStarted(" + url + ")");
 
@@ -307,7 +309,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         }
     }
     
-    public void onPageFinished(XWalkView view, String url) {
+    public void onPageFinished(XWalkViewInternal view, String url) {
         // Ignore excessive calls.
         if (!isCurrentlyLoading) {
             return;
@@ -372,7 +374,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
     }
 
 	@Override
-    public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+    public boolean shouldOverrideUrlLoading(XWalkViewInternal view, String url) {
     	// Check if it's an exec() bridge command message.
     	if (NativeToJsMessageQueue.ENABLE_LOCATION_CHANGE_EXEC_MODE && url.startsWith(CORDOVA_EXEC_URL_PREFIX)) {
     		handleExecUrl(url);
@@ -491,7 +493,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
      * @param realm
      */
     @Override
-    public void onReceivedHttpAuthRequest(XWalkView view, XWalkHttpAuthHandler handler, String host, String realm) {
+    public void onReceivedHttpAuthRequest(XWalkViewInternal view, XWalkHttpAuthHandler handler, String host, String realm) {
 
         // Get the authentication token
         AuthenticationToken token = getAuthenticationToken(host, realm);
@@ -514,7 +516,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
      * @param url           The url of the page.
      */
     @Override
-    public void onPageStarted(XWalkView view, String url) {
+    public void onPageStarted(XWalkViewInternal view, String url) {
         super.onPageStarted(view, url);
         this.publicClient.onPageStarted(view, url);
     }
@@ -528,7 +530,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
      * @param url           The url of the page.
      */
     @Override
-    public void onPageFinished(XWalkView view, String url) {
+    public void onPageFinished(XWalkViewInternal view, String url) {
         super.onPageFinished(view, url);
         this.publicClient.onPageFinished(view, url);
     }
@@ -545,7 +547,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
      */
     @TargetApi(8)
     @Override
-    public void onReceivedSslError(XWalkView view, ValueCallback<Boolean> callback, SslError error) {
+    public void onReceivedSslError(XWalkViewInternal view, ValueCallback<Boolean> callback, SslError error) {
 
         final String packageName = this.cordova.getActivity().getPackageName();
         final PackageManager pm = this.cordova.getActivity().getPackageManager();

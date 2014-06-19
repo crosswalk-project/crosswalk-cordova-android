@@ -63,9 +63,10 @@ import android.widget.FrameLayout;
 import org.xwalk.core.XWalkNavigationHistory;
 import org.xwalk.core.XWalkNavigationItem;
 import org.xwalk.core.XWalkPreferences;
-import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkView;
-import org.xwalk.core.XWalkWebChromeClient;
+// FIXME(wang16): Remove internal dependency of crosswalk.
+import org.xwalk.core.internal.XWalkSettings;
+import org.xwalk.core.internal.XWalkWebChromeClient;
 
 /*
  * This class is our web view.
