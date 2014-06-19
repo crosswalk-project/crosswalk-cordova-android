@@ -52,7 +52,7 @@ public class UserWebViewTest extends ActivityInstrumentationTestCase2<userwebvie
       testView = (CordovaWebView) innerContainer.getChildAt(0);
   }
   
-  public void testPreconditions(){
+  /*public void testPreconditions(){
       assertNotNull(innerContainer);
       assertNotNull(testView);
   }
@@ -62,7 +62,7 @@ public class UserWebViewTest extends ActivityInstrumentationTestCase2<userwebvie
     assertTrue(CordovaWebView.class.isInstance(testView));
     assertTrue(CordovaWebViewClient.class.isInstance(testActivity.testViewClient));
     assertTrue(CordovaChromeClient.class.isInstance(testActivity.testChromeClient));
-  }
+  }*/
   
 
   private void sleep() {
