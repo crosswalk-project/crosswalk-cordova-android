@@ -38,9 +38,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import org.xwalk.core.XWalkJavascriptResult;
-import org.xwalk.core.XWalkWebChromeClient;
 import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
+// FIXME(wang16): Remove internal dependency of crosswalk.
+import org.xwalk.core.internal.XWalkWebChromeClient;
 /**
  * This class is the WebChromeClient that implements callbacks for our web view.
  * The kind of callbacks that happen here are on the chrome outside the document,
