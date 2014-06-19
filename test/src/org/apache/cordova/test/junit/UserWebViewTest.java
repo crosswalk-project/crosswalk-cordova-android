@@ -27,6 +27,7 @@ import org.apache.cordova.CordovaChromeClient;
 import org.apache.cordova.test.userwebview;
 
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.suitebuilder.annotation.Suppress;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -52,11 +53,13 @@ public class UserWebViewTest extends ActivityInstrumentationTestCase2<userwebvie
       testView = (CordovaWebView) innerContainer.getChildAt(0);
   }
   
+  @Suppress
   public void testPreconditions(){
       assertNotNull(innerContainer);
       assertNotNull(testView);
   }
   
+  @Suppress
   public void testCustom()
   {
     assertTrue(CordovaWebView.class.isInstance(testView));
