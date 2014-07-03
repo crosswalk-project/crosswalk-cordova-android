@@ -59,7 +59,6 @@ import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkView;
 // FIXME(wang16): Remove internal dependency of crosswalk.
 import org.xwalk.core.internal.XWalkSettings;
-import org.xwalk.core.internal.XWalkWebChromeClient;
 
 /*
  * This class is our web view.
@@ -91,10 +90,6 @@ public class CordovaWebView extends XWalkView {
     private long lastMenuEventTime = 0;
 
     CordovaBridge bridge;
-
-    /** custom view created by the browser (a video player for example) */
-    private View mCustomView;
-    private XWalkWebChromeClient.CustomViewCallback mCustomViewCallback;
 
     private CordovaResourceApi resourceApi;
     private Whitelist internalWhitelist;
@@ -443,7 +438,7 @@ public class CordovaWebView extends XWalkView {
     
     @Override
     public void stopLoading() {
-        viewClient.isCurrentlyLoading = false;
+        chromeClient.isCurrentlyLoading = false;
         super.stopLoading();
     }
     
@@ -629,16 +624,17 @@ public class CordovaWebView extends XWalkView {
     }
 
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event)
+    public boolean dispatchKeyEvent(KeyEvent event)
     {
+        if (event.getAction() != KeyEvent.ACTION_UP) {
+            return super.dispatchKeyEvent(event);
+        }
+        int keyCode = event.getKeyCode();
         // If back key
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             // A custom view is currently displayed  (e.g. playing a video)
             if (this.hasEnteredFullscreen()) {
                 this.leaveFullscreen();
-                return true;
-            } else if (mCustomView != null) {
-                this.hideCustomView();
                 return true;
             } else {
                 // The webview is currently displayed
@@ -662,7 +658,7 @@ public class CordovaWebView extends XWalkView {
                 this.loadUrl("javascript:cordova.fireDocumentEvent('menubutton');");
             }
             this.lastMenuEventTime = event.getEventTime();
-            return super.onKeyUp(keyCode, event);
+            return super.dispatchKeyEvent(event);
         }
         // If search key
         else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
@@ -671,7 +667,7 @@ public class CordovaWebView extends XWalkView {
         }
 
         //Does webkit change this behavior?
-        return super.onKeyUp(keyCode, event);
+        return super.dispatchKeyEvent(event);
     }
 
     public void setButtonPlumbedToJs(int keyCode, boolean override) {
@@ -832,59 +828,6 @@ public class CordovaWebView extends XWalkView {
         return false;
     }
 
-    public void showCustomView(View view, XWalkWebChromeClient.CustomViewCallback callback) {
-        // This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
-        Log.d(TAG, "showing Custom View");
-        // if a view already exists then immediately terminate the new one
-        if (mCustomView != null) {
-            callback.onCustomViewHidden();
-            return;
-        }
-        
-        // Store the view and its callback for later (to kill it properly)
-        mCustomView = view;
-        mCustomViewCallback = callback;
-        
-        // Add the custom view to its container.
-        ViewGroup parent = (ViewGroup) this.getParent();
-        parent.addView(view, COVER_SCREEN_GRAVITY_CENTER);
-        
-        // Hide the content view.
-        this.setVisibility(View.GONE);
-        
-        // Finally show the custom view container.
-        parent.setVisibility(View.VISIBLE);
-        parent.bringToFront();
-    }
-
-    public void hideCustomView() {
-        // This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
-        Log.d(TAG, "Hiding Custom View");
-        if (mCustomView == null) return;
-
-        // Hide the custom view.
-        mCustomView.setVisibility(View.GONE);
-        
-        // Remove the custom view from its container.
-        ViewGroup parent = (ViewGroup) this.getParent();
-        parent.removeView(mCustomView);
-        mCustomView = null;
-        mCustomViewCallback.onCustomViewHidden();
-        
-        // Show the content view.
-        this.setVisibility(View.VISIBLE);
-    }
-    
-    /**
-     * if the video overlay is showing then we need to know 
-     * as it effects back button handling
-     * 
-     * @return true if custom view is showing
-     */
-    public boolean isCustomViewShowing() {
-        return mCustomView != null;
-    }
-    
     @Override
     public boolean restoreState(Bundle savedInstanceState)
     {
