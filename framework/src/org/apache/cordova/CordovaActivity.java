@@ -1154,7 +1154,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
-        if (appView != null && (appView.isCustomViewShowing() || appView.getFocusedChild() != null ) &&
+        if (appView != null && (appView.hasEnteredFullscreen() || appView.getFocusedChild() != null ) &&
                 (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
             return appView.onKeyUp(keyCode, event);
         } else {

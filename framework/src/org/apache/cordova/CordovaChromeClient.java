@@ -42,8 +42,7 @@ import android.widget.RelativeLayout;
 import org.xwalk.core.XWalkJavascriptResult;
 import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
-// FIXME(wang16): Remove internal dependency of crosswalk.
-import org.xwalk.core.internal.XWalkWebChromeClient;
+
 /**
  * This class is the WebChromeClient that implements callbacks for our web view.
  * The kind of callbacks that happen here are on the chrome outside the document,
@@ -63,6 +62,9 @@ public class CordovaChromeClient extends XWalkUIClient {
 
     // File Chooser
     public ValueCallback<Uri> mUploadMessage;
+
+    boolean isCurrentlyLoading;
+    private boolean doClearHistory = false;
     
     /**
      * Constructor.
@@ -84,7 +86,6 @@ public class CordovaChromeClient extends XWalkUIClient {
         super(app);
         this.cordova = ctx;
         this.appView = app;
-        this.appView.setXWalkWebChromeClient(new CordovaWebChromeClient(ctx.getActivity(), app));
     }
 
     /**
@@ -299,49 +300,89 @@ public class CordovaChromeClient extends XWalkUIClient {
         return true;
     }
 
-    // TODO(yongsheng): remove the dependency of Crosswalk internal class?
-    class CordovaWebChromeClient extends XWalkWebChromeClient {
-    // Don't add extra indents for keeping them with upstream to avoid
-    // merge conflicts.
-    private View mVideoProgressView;
-
-    private CordovaWebView appView;
-
-    CordovaWebChromeClient(Context context, CordovaWebView view) {
-        super(view);
-        appView = view;
-    }
-
-    @Override
     /**
-     * Ask the host application for a custom progress view to show while
-     * a <video> is loading.
-     * @return View The progress view.
+     * Notify the host application that a page has started loading.
+     * This method is called once for each main frame load so a page with iframes or framesets will call onPageStarted
+     * one time for the main frame. This also means that onPageStarted will not be called when the contents of an
+     * embedded frame changes, i.e. clicking a link whose target is an iframe.
+     *
+     * @param view          The webview initiating the callback.
+     * @param url           The url of the page.
      */
-    public View getVideoLoadingProgressView() {
+    @Override
+    public void onPageLoadStarted(XWalkView view, String url) {
+        isCurrentlyLoading = true;
 
-	    if (mVideoProgressView == null) {	        
-	    	// Create a new Loading view programmatically.
-	    	
-	    	// create the linear layout
-	    	LinearLayout layout = new LinearLayout(this.appView.getContext());
-	        layout.setOrientation(LinearLayout.VERTICAL);
-	        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-	        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-	        layout.setLayoutParams(layoutParams);
-	        // the proress bar
-	        ProgressBar bar = new ProgressBar(this.appView.getContext());
-	        LinearLayout.LayoutParams barLayoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-	        barLayoutParams.gravity = Gravity.CENTER;
-	        bar.setLayoutParams(barLayoutParams);   
-	        layout.addView(bar);
-	        
-	        mVideoProgressView = layout;
-	    }
-    return mVideoProgressView; 
+        // Flush stale messages.
+        this.appView.jsMessageQueue.reset();
+
+        // Broadcast message that page has loaded
+        this.appView.postMessage("onPageStarted", url);
+
+        // Notify all plugins of the navigation, so they can clean up if necessary.
+        if (this.appView.pluginManager != null) {
+            this.appView.pluginManager.onReset();
+        }
     }
+
+    /**
+     * Notify the host application that a page has stopped loading.
+     * This method is called only for main frame. When onPageLoadStopped() is called, the rendering picture may not be updated yet.
+     *
+     *
+     * @param view          The webview initiating the callback.
+     * @param url           The url of the page.
+     * @param status        The load status of the webview, can be FINISHED, CANCELLED or FAILED.
+     */
+    @Override
+    public void onPageLoadStopped(XWalkView view, String url, LoadStatus status) {
+        // Ignore excessive calls.
+        if (!isCurrentlyLoading) {
+            return;
+        }
+        isCurrentlyLoading = false;
+
+        /**
+         * Because of a timing issue we need to clear this history in onPageFinished as well as
+         * onPageStarted. However we only want to do this if the doClearHistory boolean is set to
+         * true. You see when you load a url with a # in it which is common in jQuery applications
+         * onPageStared is not called. Clearing the history at that point would break jQuery apps.
+         */
+        if (this.doClearHistory) {
+            view.getNavigationHistory().clear();
+            this.doClearHistory = false;
+        }
+
+        // Clear timeout flag
+        this.appView.loadUrlTimeout++;
+
+        // Broadcast message that page has loaded
+        this.appView.postMessage("onPageFinished", url);
+
+        // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
+        if (this.appView.getVisibility() == View.INVISIBLE) {
+            Thread t = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(2000);
+                        cordova.getActivity().runOnUiThread(new Runnable() {
+                            public void run() {
+                                appView.postMessage("spinner", "stop");
+                            }
+                        });
+                    } catch (InterruptedException e) {
+                    }
+                }
+            });
+            t.start();
+        }
+
+        // Shutdown if blank loaded
+        if (url.equals("about:blank")) {
+            appView.postMessage("exit", null);
+        }
     }
-    
+
     @Override
     public void openFileChooser(XWalkView view, ValueCallback<Uri> uploadMsg, String acceptType,
             String capture) {

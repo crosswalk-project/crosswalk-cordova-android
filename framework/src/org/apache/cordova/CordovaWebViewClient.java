@@ -47,10 +47,6 @@ import android.webkit.WebResourceResponse;
 import org.chromium.net.NetError;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkView;
-// FIXME(wang16): Remove internal dependency of crosswalk.
-import org.xwalk.core.internal.XWalkClient;
-import org.xwalk.core.internal.XWalkHttpAuthHandler;
-import org.xwalk.core.internal.XWalkViewInternal;
 
 /**
  * This class is the XWalkResourceClient that implements callbacks for our web view.
@@ -70,8 +66,6 @@ public class CordovaWebViewClient extends XWalkResourceClient {
 	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
     CordovaWebView appView;
-    private boolean doClearHistory = false;
-    boolean isCurrentlyLoading;
 
     // Success
     public static final int ERROR_OK = 0;
@@ -129,7 +123,6 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         super(view);
         this.cordova = cordova;
         this.appView = view;
-        this.appView.setXWalkClient(new CordovaInternalViewClient(view, cordova, this));
     }
 
     /**
@@ -293,88 +286,8 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         this.appView.postMessage("onReceivedError", data);
     }
     
-    public void onPageStarted(XWalkViewInternal view, String url) {
-        isCurrentlyLoading = true;
-        LOG.d(TAG, "onPageStarted(" + url + ")");
-
-        // Flush stale messages.
-        this.appView.jsMessageQueue.reset();
-
-        // Broadcast message that page has loaded
-        this.appView.postMessage("onPageStarted", url);
-
-        // Notify all plugins of the navigation, so they can clean up if necessary.
-        if (this.appView.pluginManager != null) {
-            this.appView.pluginManager.onReset();
-        }
-    }
-    
-    public void onPageFinished(XWalkViewInternal view, String url) {
-        // Ignore excessive calls.
-        if (!isCurrentlyLoading) {
-            return;
-        }
-        isCurrentlyLoading = false;
-        LOG.d(TAG, "onPageFinished(" + url + ")");
-
-        /**
-         * Because of a timing issue we need to clear this history in onPageFinished as well as
-         * onPageStarted. However we only want to do this if the doClearHistory boolean is set to
-         * true. You see when you load a url with a # in it which is common in jQuery applications
-         * onPageStared is not called. Clearing the history at that point would break jQuery apps.
-         */
-        if (this.doClearHistory) {
-            view.getNavigationHistory().clear();
-            this.doClearHistory = false;
-        }
-
-        // Clear timeout flag
-        this.appView.loadUrlTimeout++;
-
-        // Broadcast message that page has loaded
-        this.appView.postMessage("onPageFinished", url);
-
-        // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
-        if (this.appView.getVisibility() == View.INVISIBLE) {
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        Thread.sleep(2000);
-                        cordova.getActivity().runOnUiThread(new Runnable() {
-                            public void run() {
-                                appView.postMessage("spinner", "stop");
-                            }
-                        });
-                    } catch (InterruptedException e) {
-                    }
-                }
-            });
-            t.start();
-        }
-
-        // Shutdown if blank loaded
-        if (url.equals("about:blank")) {
-            appView.postMessage("exit", null);
-        }
-    }
-
-    // TODO(yongsheng): remove the dependency of Crosswalk internal class?
-    class CordovaInternalViewClient extends XWalkClient {
-    // Don't add extra indents for keeping them with upstream to avoid
-    // merge conflicts.
-    CordovaInterface cordova;
-    CordovaWebView appView;
-    CordovaWebViewClient publicClient;
-
-    CordovaInternalViewClient(CordovaWebView view, CordovaInterface ci, CordovaWebViewClient client) {
-        super(view);
-        cordova = ci;
-        appView = view;
-        publicClient = client;
-    }
-
-	@Override
-    public boolean shouldOverrideUrlLoading(XWalkViewInternal view, String url) {
+    @Override
+    public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
     	// Check if it's an exec() bridge command message.
     	if (NativeToJsMessageQueue.ENABLE_LOCATION_CHANGE_EXEC_MODE && url.startsWith(CORDOVA_EXEC_URL_PREFIX)) {
     		handleExecUrl(url);
@@ -483,94 +396,6 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         return true;
     }
     
-    /**
-     * On received http auth request.
-     * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination
-     *
-     * @param view
-     * @param handler
-     * @param host
-     * @param realm
-     */
-    @Override
-    public void onReceivedHttpAuthRequest(XWalkViewInternal view, XWalkHttpAuthHandler handler, String host, String realm) {
-
-        // Get the authentication token
-        AuthenticationToken token = getAuthenticationToken(host, realm);
-        if (token != null) {
-            handler.proceed(token.getUserName(), token.getPassword());
-        }
-        else {
-            // Handle 401 like we'd normally do!
-            super.onReceivedHttpAuthRequest(view, handler, host, realm);
-        }
-    }
-
-    /**
-     * Notify the host application that a page has started loading.
-     * This method is called once for each main frame load so a page with iframes or framesets will call onPageStarted
-     * one time for the main frame. This also means that onPageStarted will not be called when the contents of an
-     * embedded frame changes, i.e. clicking a link whose target is an iframe.
-     *
-     * @param view          The webview initiating the callback.
-     * @param url           The url of the page.
-     */
-    @Override
-    public void onPageStarted(XWalkViewInternal view, String url) {
-        super.onPageStarted(view, url);
-        this.publicClient.onPageStarted(view, url);
-    }
-
-    /**
-     * Notify the host application that a page has finished loading.
-     * This method is called only for main frame. When onPageFinished() is called, the rendering picture may not be updated yet.
-     *
-     *
-     * @param view          The webview initiating the callback.
-     * @param url           The url of the page.
-     */
-    @Override
-    public void onPageFinished(XWalkViewInternal view, String url) {
-        super.onPageFinished(view, url);
-        this.publicClient.onPageFinished(view, url);
-    }
-
-    /**
-     * Notify the host application that an SSL error occurred while loading a resource.
-     * The host application must call either handler.cancel() or handler.proceed().
-     * Note that the decision may be retained for use in response to future SSL errors.
-     * The default behavior is to cancel the load.
-     *
-     * @param view          The WebView that is initiating the callback.
-     * @param handler       An SslErrorHandler object that will handle the user's response.
-     * @param error         The SSL error object.
-     */
-    @TargetApi(8)
-    @Override
-    public void onReceivedSslError(XWalkViewInternal view, ValueCallback<Boolean> callback, SslError error) {
-
-        final String packageName = this.cordova.getActivity().getPackageName();
-        final PackageManager pm = this.cordova.getActivity().getPackageManager();
-
-        ApplicationInfo appInfo;
-        try {
-            appInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
-            if ((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
-                // debug = true
-                callback.onReceiveValue(true);
-                return;
-            } else {
-                // debug = false
-                super.onReceivedSslError(view, callback, error);
-            }
-        } catch (NameNotFoundException e) {
-            // When it doubt, lock it out!
-            super.onReceivedSslError(view, callback, error);
-        }
-    }
-
-    }
-
     /**
      * Sets the authentication token.
      *
