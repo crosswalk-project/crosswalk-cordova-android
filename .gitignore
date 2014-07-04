@@ -41,3 +41,7 @@ Desktop.ini
 npm-debug.log
 /node_modules
 /framework/build
+# Eclipse files
+.classpath
+.project
+.settings
