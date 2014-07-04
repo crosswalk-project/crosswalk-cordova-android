@@ -38,3 +38,7 @@ Desktop.ini
 # IntelliJ IDEA files
 *.iml
 .idea
+# Eclipse files
+.classpath
+.project
+.settings
