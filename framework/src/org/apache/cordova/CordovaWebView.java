@@ -57,8 +57,6 @@ import org.xwalk.core.XWalkNavigationHistory;
 import org.xwalk.core.XWalkNavigationItem;
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkView;
-// FIXME(wang16): Remove internal dependency of crosswalk.
-import org.xwalk.core.internal.XWalkSettings;
 
 /*
  * This class is our web view.
@@ -187,12 +185,12 @@ public class CordovaWebView extends XWalkView {
             this.requestFocusFromTouch();
         }
 
-        // TODO(yongsheng): remove settings?
         // Enable JavaScript
-        XWalkSettings settings = this.getSettings();
-        if (settings == null) return;
-        settings.setJavaScriptEnabled(true);
-        settings.setJavaScriptCanOpenWindowsAutomatically(true);
+        //XWalkSettings settings = this.getSettings();
+        //if (settings == null) return;
+        // wang16: covered by XWalkPreferences setting in static code.
+        //settings.setJavaScriptEnabled(true);
+        //settings.setJavaScriptCanOpenWindowsAutomatically(true);
         // nhu: N/A
         //settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
 
@@ -201,7 +199,8 @@ public class CordovaWebView extends XWalkView {
         //settings.setSaveFormData(false);
         //settings.setSavePassword(false);
         
-        settings.setAllowUniversalAccessFromFileURLs(true);
+        // wang16: covered by XWalkPreferences setting in static code.
+        //settings.setAllowUniversalAccessFromFileURLs(true);
         // Enable database
         // We keep this disabled because we use or shim to get around DOM_EXCEPTION_ERROR_16
         String databasePath = getContext().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
@@ -219,17 +218,22 @@ public class CordovaWebView extends XWalkView {
         //settings.setGeolocationDatabasePath(databasePath);
 
         // Enable DOM storage
-        settings.setDomStorageEnabled(true);
+        // wang16: default value in xwalk is true.
+        //settings.setDomStorageEnabled(true);
 
         // Enable built-in geolocation
-        settings.setGeolocationEnabled(true);
+        // wang16: default value in xwalk is true.
+        //settings.setGeolocationEnabled(true);
         
         // Enable AppCache
         // Fix for CB-2282
         // nhu: N/A
         //settings.setAppCacheMaxSize(5 * 1048576);
-        settings.setAppCachePath(databasePath);
-        settings.setAppCacheEnabled(true);
+
+        // wang16: setAppCachePath is not implemented in xwalk indeed.
+        //settings.setAppCachePath(pathToCache);
+        // wang16: default value in xwalk is true.
+        //settings.setAppCacheEnabled(true);
     }
 
     public CordovaChromeClient makeWebChromeClient(CordovaInterface cordova) {
@@ -850,5 +854,14 @@ public class CordovaWebView extends XWalkView {
 
     public CordovaPreferences getPreferences() {
         return preferences;
+    }
+
+    static {
+        // XWalkPreferencesInternal.ENABLE_JAVASCRIPT
+        XWalkPreferences.setValue("enable-javascript", true);
+        // XWalkPreferencesInternal.JAVASCRIPT_CAN_OPEN_WINDOW
+        XWalkPreferences.setValue("javascript-can-open-window", true);
+        // XWalkPreferencesInternal.ALLOW_UNIVERSAL_ACCESS_FROM_FILE
+        XWalkPreferences.setValue("allow-universal-access-from-file", true);
     }
 }
