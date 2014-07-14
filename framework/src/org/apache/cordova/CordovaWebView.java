@@ -863,5 +863,7 @@ public class CordovaWebView extends XWalkView {
         XWalkPreferences.setValue("javascript-can-open-window", true);
         // XWalkPreferencesInternal.ALLOW_UNIVERSAL_ACCESS_FROM_FILE
         XWalkPreferences.setValue("allow-universal-access-from-file", true);
+        // XWalkPreferencesInternal.SUPPORT_MULTIPLE_WINDOWS
+        XWalkPreferences.setValue("support-multiple-windows", false);
     }
 }
