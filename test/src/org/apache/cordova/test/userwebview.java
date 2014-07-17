@@ -21,7 +21,6 @@ package org.apache.cordova.test;
 import android.os.Bundle;
 //import android.webkit.WebView;
 import org.xwalk.core.XWalkView;
-import org.xwalk.core.XWalkGeolocationPermissions.Callback;
 
 import org.apache.cordova.*;
 import org.apache.cordova.LOG;
@@ -46,12 +45,8 @@ public class userwebview extends DroidGap {
             LOG.d("userwebview", "TestChromeClient()");
         }
 
-        @Override
-        public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
-            LOG.d("userwebview", "onGeolocationPermissionsShowPrompt(" + origin + ")");
-            super.onGeolocationPermissionsShowPrompt(origin, callback);
-            callback.invoke(origin, true, false);
-        }
+        // TODO(gaochun): Implement onGeolocationPermissionsShowPrompt() in CordovaChromeClient
+        // and add the test here.
     }
 
     /**
@@ -63,17 +58,8 @@ public class userwebview extends DroidGap {
             LOG.d("userwebview", "TestViewClient()");
         }
 
-        @Override
-        public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
-            LOG.d("userwebview", "shouldOverrideUrlLoading(" + url + ")");
-            return super.shouldOverrideUrlLoading(view, url);
-        }
-
-        @Override
-        public void onReceivedError(XWalkView view, int errorCode, String description, String failingUrl) {
-            LOG.d("userwebview", "onReceivedError: Error code=" + errorCode + " Description=" + description + " URL=" + failingUrl);
-            super.onReceivedError(view, errorCode, description, failingUrl);
-        }
+        // TODO(gaochun): Implement shouldOverrideUrlLoading() onReceivedError()
+        // in CordovaWebViewClient and add the related tests here.
     }
 
 }
