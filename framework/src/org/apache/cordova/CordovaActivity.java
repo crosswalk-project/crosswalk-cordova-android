@@ -43,6 +43,7 @@ import android.graphics.Point;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -264,6 +265,27 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     }
 
     /**
+     * Toggle fullscreen for window.
+     */
+    @SuppressLint("NewApi")
+    private void toggleFullscreen(Window window) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            final int uiOptions =
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+            window.getDecorView().setSystemUiVisibility(uiOptions);
+        } else {
+            window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+    }
+
+    /**
      * Construct the default web view object.
      *
      * This is intended to be overridable by subclasses of CordovaIntent which
@@ -317,8 +339,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else if (preferences.getBoolean("Fullscreen", false)) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            toggleFullscreen(getWindow());
         } else {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -620,6 +641,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         // Force window to have focus, so application always
         // receive user input. Workaround for some devices (Samsung Galaxy Note 3 at least)
         this.getWindow().getDecorView().requestFocus();
+
+        // When back from background, we need to reset fullscreen mode.
+        toggleFullscreen(getWindow());
 
         this.appView.handleResume(this.keepRunning, this.activityResultKeepRunning);
 
@@ -933,12 +957,18 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
     }
 
+    @SuppressLint("NewApi")
     protected int getScreenOrientation() {
         // getResources().getConfiguration().orientation returns wrong value in some devices.
         // Below is another way to calculate screen orientation.
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
-        display.getSize(size);
+        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
+            size.set(display.getWidth(), display.getHeight());
+        } else {
+            display.getSize(size);
+        }
+
         int orientation;
         if (size.x < size.y) {
             orientation = Configuration.ORIENTATION_PORTRAIT;
@@ -978,11 +1008,11 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                 // Create and show the dialog
                 splashDialog = new Dialog(that, android.R.style.Theme_Translucent_NoTitleBar);
                 // check to see if the splash screen should be full screen
-                if ((getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                        == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
-                    splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                if(getBooleanProperty("FullScreen", false))
+                {
+                    toggleFullscreen(splashDialog.getWindow());
                 }
+
                 splashDialog.setContentView(splashLayout);
                 splashDialog.setCancelable(false);
                 splashDialog.show();
