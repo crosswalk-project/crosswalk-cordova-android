@@ -149,7 +149,12 @@ public class SplashScreenInternal extends CordovaPlugin {
         // Below is another way to calculate screen orientation.
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
-        display.getSize(size);
+        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
+            size.set(display.getWidth(), display.getHeight());
+        } else {
+            display.getSize(size);
+        }
+
         int orientation;
         if (size.x < size.y) {
             orientation = Configuration.ORIENTATION_PORTRAIT;
@@ -202,11 +207,10 @@ public class SplashScreenInternal extends CordovaPlugin {
                 // Create and show the dialog
                 splashDialog = new Dialog(webView.getContext(), android.R.style.Theme_Translucent_NoTitleBar);
                 // check to see if the splash screen should be full screen
-                if ((cordova.getActivity().getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                        == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
-                    splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                if(getBooleanProperty("FullScreen", false)) {
+                    toggleFullscreen(splashDialog.getWindow());
                 }
+
                 splashDialog.setContentView(splashLayout);
                 splashDialog.setCancelable(false);
                 splashDialog.show();
