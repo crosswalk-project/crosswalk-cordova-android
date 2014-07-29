@@ -704,8 +704,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     protected void onPause() {
         super.onPause();
-        if (this.appView != null)
-            this.appView.onHide();
 
         LOG.d(TAG, "Paused the application!");
 
@@ -743,8 +741,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     protected void onResume() {
         super.onResume();
-        if (this.appView != null)
-            this.appView.onShow();
         //Reload the configuration
         Config.init(this);
 
