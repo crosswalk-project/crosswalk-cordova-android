@@ -765,7 +765,6 @@ public class CordovaWebView extends XWalkView {
             // Pause JavaScript timers (including setInterval)
             this.pauseTimers();
         }
-        this.onHide();
         paused = true;
    
     }
@@ -781,7 +780,6 @@ public class CordovaWebView extends XWalkView {
 
         // Resume JavaScript timers (including setInterval)
         this.resumeTimers();
-        this.onShow();
         paused = false;
     }
     
