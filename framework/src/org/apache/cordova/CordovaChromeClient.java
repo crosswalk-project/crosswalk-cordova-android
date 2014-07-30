@@ -334,26 +334,7 @@ public class CordovaChromeClient extends XWalkUIClient {
     @Override
     public void openFileChooser(XWalkView view, ValueCallback<Uri> uploadMsg, String acceptType,
             String capture) {
-        this.openFileChooser(uploadMsg, "*/*");
-    }
-
-    public void openFileChooser( ValueCallback<Uri> uploadMsg, String acceptType ) {
-        this.openFileChooser(uploadMsg, acceptType, null);
-    }
-    
-    public void openFileChooser(final ValueCallback<Uri> uploadMsg, String acceptType, String capture)
-    {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        cordova.startActivityForResult(new CordovaPlugin() {
-            @Override
-            public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-                Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
-                Log.d(TAG, "Receive file chooser URL: " + result);
-                uploadMsg.onReceiveValue(result);
-            }
-        }, intent, FILECHOOSER_RESULTCODE);
+        uploadMsg.onReceiveValue(null);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
