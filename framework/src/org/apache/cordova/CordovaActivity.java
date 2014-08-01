@@ -639,7 +639,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         this.getWindow().getDecorView().requestFocus();
 
         // When back from background, we need to reset fullscreen mode.
-        toggleFullscreen(getWindow());
+        if(getBooleanProperty("FullScreen", false)) {
+            toggleFullscreen(getWindow());
+        }
 
         this.appView.handleResume(this.keepRunning, this.activityResultKeepRunning);
 
