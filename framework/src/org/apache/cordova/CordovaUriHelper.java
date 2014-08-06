@@ -21,9 +21,11 @@ package org.apache.cordova;
 
 import org.json.JSONException;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
+import android.os.Build;
 //import android.webkit.WebView;
 import org.xwalk.core.XWalkView;
 
@@ -70,7 +72,8 @@ public class CordovaUriHelper {
      * @param url           The url to be loaded.
      * @return              true to override, false for default behavior
      */
-    public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+    boolean shouldOverrideUrlLoading(XWalkView view, String url) {
         // The WebView should support http and https when going on the Internet
         if(url.startsWith("http:") || url.startsWith("https:"))
         {
@@ -101,7 +104,9 @@ public class CordovaUriHelper {
                 intent.setData(Uri.parse(url));
                 intent.addCategory(Intent.CATEGORY_BROWSABLE);
                 intent.setComponent(null);
-                intent.setSelector(null);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                    intent.setSelector(null);
+                }
                 this.cordova.getActivity().startActivity(intent);
             } catch (android.content.ActivityNotFoundException e) {
                 LOG.e(TAG, "Error loading url " + url, e);
