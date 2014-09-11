@@ -775,7 +775,16 @@ public class CordovaWebView extends XWalkView {
         return super.dispatchKeyEvent(event);
     }
 
-    
+    @Override
+    public void pauseTimers() {
+        // This is called by XWalkViewInternal.onActivityStateChange().
+        // We don't want them paused by default though.
+    }
+
+    public void pauseTimersForReal() {
+        super.pauseTimers();
+    }
+
     public void bindButton(boolean override)
     {
         this.bound = override;
@@ -821,7 +830,7 @@ public class CordovaWebView extends XWalkView {
         // If app doesn't want to run in background
         if (!keepRunning) {
             // Pause JavaScript timers (including setInterval)
-            this.pauseTimers();
+            this.pauseTimersForReal();
         }
         paused = true;
    
