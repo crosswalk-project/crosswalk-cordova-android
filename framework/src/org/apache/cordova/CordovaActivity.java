@@ -662,9 +662,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     public void onDestroy() {
         LOG.d(TAG, "CordovaActivity.onDestroy()");
-        super.onDestroy();
-        if (this.appView != null)
-            this.appView.onDestroy();
 
         // hide the splash screen to avoid leaking a window
         this.removeSplashScreen();
@@ -675,6 +672,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         else {
             this.activityState = ACTIVITY_EXITING; 
         }
+
+        super.onDestroy();
     }
 
     /**
