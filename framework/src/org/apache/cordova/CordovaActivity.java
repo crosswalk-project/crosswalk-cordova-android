@@ -212,7 +212,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         
         if(preferences.getBoolean("SetFullscreen", false))
         {
-            Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
+            Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will  be removed in a future version.");
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else if (preferences.getBoolean("Fullscreen", false)) {
