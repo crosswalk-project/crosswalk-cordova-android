@@ -74,7 +74,7 @@ import org.xwalk.core.XWalkView;
 public class CordovaWebView extends XWalkView {
 
     public static final String TAG = "CordovaWebView";
-    public static final String CORDOVA_VERSION = "3.5.0";
+    public static final String CORDOVA_VERSION = "3.5.1";
 
     private ArrayList<Integer> keyDownCodes = new ArrayList<Integer>();
     private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
@@ -377,17 +377,7 @@ public class CordovaWebView extends XWalkView {
             this.loadUrlNow(url);
         }
         else {
-
-            String initUrl = this.getProperty("url", null);
-
-            // If first page of app, then set URL to load to be the one passed in
-            if (initUrl == null) {
-                this.loadUrlIntoView(url);
-            }
-            // Otherwise use the URL specified in the activity's extras bundle
-            else {
-                this.loadUrlIntoView(initUrl);
-            }
+            this.loadUrlIntoView(url);
         }
     }
 
@@ -402,16 +392,15 @@ public class CordovaWebView extends XWalkView {
      * @param url
      * @param time              The number of ms to wait before loading webview
      */
+    @Deprecated
     public void loadUrl(final String url, int time) {
-        String initUrl = this.getProperty("url", null);
-
-        // If first page of app, then set URL to load to be the one passed in
-        if (initUrl == null) {
-            this.loadUrlIntoView(url, time);
+        if(url == null)
+        {
+            this.loadUrlIntoView(Config.getStartUrl());
         }
-        // Otherwise use the URL specified in the activity's extras bundle
-        else {
-            this.loadUrlIntoView(initUrl);
+        else
+        {
+            this.loadUrlIntoView(url);
         }
     }
 
