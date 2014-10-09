@@ -49,6 +49,8 @@ import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkClient;
 import org.xwalk.core.XWalkHttpAuthHandler;
+import org.xwalk.core.XWalkNavigationHistory;
+import org.xwalk.core.XWalkNavigationItem;
 
 /**
  * This class is the XWalkResourceClient that implements callbacks for our web view.
@@ -68,6 +70,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
 	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
     CordovaWebView appView;
+    CordovaUriHelper helper;
     private boolean doClearHistory = false;
     boolean isCurrentlyLoading;
 
@@ -128,6 +131,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         this.cordova = cordova;
         this.appView = view;
         this.appView.setXWalkClient(new CordovaInternalViewClient(view, cordova, this));
+        helper = new CordovaUriHelper(cordova, view);
     }
 
     /**
@@ -137,6 +141,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
      */
     public void setWebView(CordovaWebView view) {
         this.appView = view;
+        helper = new CordovaUriHelper(cordova, view);
     }
 
 
@@ -175,7 +180,20 @@ public class CordovaWebViewClient extends XWalkResourceClient {
         // Clear timeout flag
         this.appView.loadUrlTimeout++;
 
-        // Handle error
+        // If this is a "Protocol Not Supported" error, then revert to the previous
+        // page. If there was no previous page, then punt. The application's config
+        // is likely incorrect (start page set to sms: or something like that)
+        if (errorCode == XWalkResourceClient.ERROR_UNSUPPORTED_SCHEME) {
+            if (view.getNavigationHistory().canGoBack()) {
+                view.getNavigationHistory().navigate(
+                    XWalkNavigationHistory.Direction.BACKWARD, 1);
+                return;
+            } else {
+                super.onReceivedLoadError(view, errorCode, description, failingUrl);
+            }
+         }
+ 
+        // Handle other errors by passing them to the webview in JS
         JSONObject data = new JSONObject();
         try {
             data.put("errorCode", errorCode);
@@ -269,112 +287,7 @@ public class CordovaWebViewClient extends XWalkResourceClient {
 
 	@Override
     public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
-    	// Check if it's an exec() bridge command message.
-    	if (NativeToJsMessageQueue.ENABLE_LOCATION_CHANGE_EXEC_MODE && url.startsWith(CORDOVA_EXEC_URL_PREFIX)) {
-    		handleExecUrl(url);
-    	}
-
-        // Give plugins the chance to handle the url
-    	else if ((this.appView.pluginManager != null) && this.appView.pluginManager.onOverrideUrlLoading(url)) {
-        }
-
-        // If dialing phone (tel:5551212)
-        else if (url.startsWith("tel:")) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_DIAL);
-                intent.setData(Uri.parse(url));
-                this.cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error dialing " + url + ": " + e.toString());
-            }
-        }
-
-        // If displaying map (geo:0,0?q=address)
-        else if (url.startsWith("geo:")) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                this.cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error showing map " + url + ": " + e.toString());
-            }
-        }
-
-        // If sending email (mailto:abc@corp.com)
-        else if (url.startsWith("mailto:")) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                this.cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error sending email " + url + ": " + e.toString());
-            }
-        }
-
-        // If sms:5551212?body=This is the message
-        else if (url.startsWith("sms:")) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-
-                // Get address
-                String address = null;
-                int parmIndex = url.indexOf('?');
-                if (parmIndex == -1) {
-                    address = url.substring(4);
-                }
-                else {
-                    address = url.substring(4, parmIndex);
-
-                    // If body, then set sms body
-                    Uri uri = Uri.parse(url);
-                    String query = uri.getQuery();
-                    if (query != null) {
-                        if (query.startsWith("body=")) {
-                            intent.putExtra("sms_body", query.substring(5));
-                        }
-                    }
-                }
-                intent.setData(Uri.parse("sms:" + address));
-                intent.putExtra("address", address);
-                intent.setType("vnd.android-dir/mms-sms");
-                this.cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error sending sms " + url + ":" + e.toString());
-            }
-        }
-        
-        //Android Market
-        else if(url.startsWith("market:")) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                this.cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error loading Google Play Store: " + url, e);
-            }
-        }
-
-        // All else
-        else {
-
-            // If our app or file:, then load into a new Cordova webview container by starting a new instance of our activity.
-            // Our app continues to run.  When BACK is pressed, our app is redisplayed.
-            if (url.startsWith("file://") || url.startsWith("data:")  || Config.isUrlWhiteListed(url)) {
-                return false;
-            }
-
-            // If not our application, let default viewer handle
-            else {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    this.cordova.getActivity().startActivity(intent);
-                } catch (android.content.ActivityNotFoundException e) {
-                    LOG.e(TAG, "Error loading url " + url, e);
-                }
-            }
-        }
-        return true;
+        return publicClient.helper.shouldOverrideUrlLoading(view, url);
     }
     
     /**
