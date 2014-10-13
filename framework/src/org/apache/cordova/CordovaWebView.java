@@ -150,8 +150,11 @@ public class CordovaWebView extends XWalkView {
         this.internalWhitelist = internalWhitelist;
         this.externalWhitelist = externalWhitelist;
         this.preferences = preferences;
-        super.setWebChromeClient(webChromeClient);
-        super.setWebViewClient(webViewClient);
+        // There are no super.setWebChromeClient and super.setWebViewClient function in Xwalk.
+        // so align with Cordova upstream.
+        // https://github.com/apache/cordova-android/commit/705991e5b037743e632934b3c6ee98976e18d3f8#diff-b97e89dfb7e195850e6e2d3b531487feR561
+        super.setResourceClient(webViewClient);
+        super.setUIClient(webChromeClient);
 
         pluginManager = new PluginManager(this, this.cordova, pluginEntries);
         bridge = new CordovaBridge(pluginManager, new NativeToJsMessageQueue(this, cordova));
@@ -272,15 +275,25 @@ public class CordovaWebView extends XWalkView {
         this.addJavascriptInterface(new ExposedJsApi(bridge), "_cordovaNative");
     }
 
-    @Override
-    public void setWebViewClient(WebViewClient client) {
-        this.viewClient = (CordovaWebViewClient)client;
+    /**
+     * Set the WebViewClient.
+     * There is no setWebViewClient in xwalk, so don't override setWebViewClient function
+     * https://github.com/apache/cordova-android/commit/caeb86843ddca712b5bf1dfbdac9005edce98100
+     *
+     * @param client
+     */
+    public void setWebViewClient(CordovaWebViewClient client) {
+        this.viewClient = client;
         super.setResourceClient(client);
     }
 
-    @Override
-    public void setWebChromeClient(WebChromeClient client) {
-        this.chromeClient = (CordovaChromeClient)client;
+    /**
+     * Set the WebChromeClient.
+     *
+     * @param client
+     */
+    public void setWebChromeClient(CordovaChromeClient client) {
+        this.chromeClient = client;
         super.setUIClient(client);
     }
     
