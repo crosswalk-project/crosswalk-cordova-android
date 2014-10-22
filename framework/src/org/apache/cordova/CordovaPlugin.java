@@ -27,6 +27,7 @@ import org.json.JSONException;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.webkit.CookieSyncManager;
 
 /**
  * Plugins must extend this class and override one of the execute methods.
@@ -49,6 +50,14 @@ public class CordovaPlugin {
         this.preferences = preferences;
         initialize(cordova, webView);
         pluginInitialize();
+        // File Transfer API implementation leverages the android.webkit.CookieManager.
+        // But trying to getinstance() of CookieManager before the webview
+        // instantiated would cause crash. In the cordova with xwalk backend,
+        // there doesn't exist webview. From the android official document
+        // (http://developer.android.com/reference/android/webkit/CookieManager.html),
+        // it requires to call following API first.
+        // TODO: add condition only for xwalk backend when dynamic switch is ready.
+        CookieSyncManager.createInstance(cordova.getActivity());
     }
 
     /**

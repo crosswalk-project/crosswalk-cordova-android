@@ -27,19 +27,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.net.http.SslError;
 import android.view.View;
-import android.webkit.HttpAuthHandler;
-import android.webkit.SslErrorHandler;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+//import android.webkit.HttpAuthHandler;
+//import android.webkit.SslErrorHandler;
+import android.webkit.ValueCallback;
+//import android.webkit.WebView;
+//import android.webkit.WebViewClient;
+import org.chromium.net.NetError;
+import org.xwalk.core.XWalkResourceClient;
+import org.xwalk.core.XWalkView;
 
 /**
- * This class is the WebViewClient that implements callbacks for our web view.
+ * This class is the XWalkResourceClient that implements callbacks for our web view.
  * The kind of callbacks that happen here are regarding the rendering of the
  * document instead of the chrome surrounding it, such as onPageStarted(), 
  * shouldOverrideUrlLoading(), etc. Related to but different than
@@ -50,20 +55,52 @@ import android.webkit.WebViewClient;
  * @see CordovaChromeClient
  * @see CordovaWebView
  */
-public class CordovaWebViewClient extends WebViewClient {
+public class CordovaWebViewClient extends XWalkResourceClient {
 
 	private static final String TAG = "CordovaWebViewClient";
     CordovaInterface cordova;
     CordovaWebView appView;
     CordovaUriHelper helper;
-    private boolean doClearHistory = false;
-    boolean isCurrentlyLoading;
+
+    // Success
+    public static final int ERROR_OK = 0;
+    // Generic error
+    public static final int ERROR_UNKNOWN = -1;
+    // Server or proxy hostname lookup failed
+    public static final int ERROR_HOST_LOOKUP = -2;
+    // Unsupported authentication scheme (not basic or digest)
+    public static final int ERROR_UNSUPPORTED_AUTH_SCHEME = -3;
+    // User authentication failed on server
+    public static final int ERROR_AUTHENTICATION = -4;
+    // User authentication failed on proxy
+    public static final int ERROR_PROXY_AUTHENTICATION = -5;
+    // Failed to connect to the server
+    public static final int ERROR_CONNECT = -6;
+    // Failed to read or write to the server
+    public static final int ERROR_IO = -7;
+    // Connection timed out
+    public static final int ERROR_TIMEOUT = -8;
+    // Too many redirects
+    public static final int ERROR_REDIRECT_LOOP = -9;
+    // Unsupported URI scheme
+    public static final int ERROR_UNSUPPORTED_SCHEME = -10;
+    // Failed to perform SSL handshake
+    public static final int ERROR_FAILED_SSL_HANDSHAKE = -11;
+    // Malformed URL
+    public static final int ERROR_BAD_URL = -12;
+    // Generic file error
+    public static final int ERROR_FILE = -13;
+    // File not found
+    public static final int ERROR_FILE_NOT_FOUND = -14;
+    // Too many requests during this load
+    public static final int ERROR_TOO_MANY_REQUESTS = -15;
 
     /** The authorization tokens. */
     private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
 
     @Deprecated
     public CordovaWebViewClient(CordovaInterface cordova) {
+        super(null);
         this.cordova = cordova;
     }
 
@@ -74,6 +111,7 @@ public class CordovaWebViewClient extends WebViewClient {
      * @param view
      */
     public CordovaWebViewClient(CordovaInterface cordova, CordovaWebView view) {
+        super(view);
         this.cordova = cordova;
         this.appView = view;
         helper = new CordovaUriHelper(cordova, view);
@@ -90,128 +128,7 @@ public class CordovaWebViewClient extends WebViewClient {
         helper = new CordovaUriHelper(cordova, view);
     }
 
-    /**
-     * Give the host application a chance to take over the control when a new url
-     * is about to be loaded in the current WebView.
-     *
-     * @param view          The WebView that is initiating the callback.
-     * @param url           The url to be loaded.
-     * @return              true to override, false for default behavior
-     */
-	@Override
-    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        return helper.shouldOverrideUrlLoading(view, url);
-    }
-    
-    /**
-     * On received http auth request.
-     * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination
-     *
-     * @param view
-     * @param handler
-     * @param host
-     * @param realm
-     */
-    @Override
-    public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
-
-        // Get the authentication token
-        AuthenticationToken token = this.getAuthenticationToken(host, realm);
-        if (token != null) {
-            handler.proceed(token.getUserName(), token.getPassword());
-        }
-        else {
-            // Handle 401 like we'd normally do!
-            super.onReceivedHttpAuthRequest(view, handler, host, realm);
-        }
-    }
-
-    /**
-     * Notify the host application that a page has started loading.
-     * This method is called once for each main frame load so a page with iframes or framesets will call onPageStarted
-     * one time for the main frame. This also means that onPageStarted will not be called when the contents of an
-     * embedded frame changes, i.e. clicking a link whose target is an iframe.
-     *
-     * @param view          The webview initiating the callback.
-     * @param url           The url of the page.
-     */
-    @Override
-    public void onPageStarted(WebView view, String url, Bitmap favicon) {
-        super.onPageStarted(view, url, favicon);
-        isCurrentlyLoading = true;
-        LOG.d(TAG, "onPageStarted(" + url + ")");
-        // Flush stale messages.
-        this.appView.bridge.reset(url);
-
-        // Broadcast message that page has loaded
-        this.appView.postMessage("onPageStarted", url);
-
-        // Notify all plugins of the navigation, so they can clean up if necessary.
-        if (this.appView.pluginManager != null) {
-            this.appView.pluginManager.onReset();
-        }
-    }
-
-    /**
-     * Notify the host application that a page has finished loading.
-     * This method is called only for main frame. When onPageFinished() is called, the rendering picture may not be updated yet.
-     *
-     *
-     * @param view          The webview initiating the callback.
-     * @param url           The url of the page.
-     */
-    @Override
-    public void onPageFinished(WebView view, String url) {
-        super.onPageFinished(view, url);
-        // Ignore excessive calls.
-        if (!isCurrentlyLoading) {
-            return;
-        }
-        isCurrentlyLoading = false;
-        LOG.d(TAG, "onPageFinished(" + url + ")");
-
-        /**
-         * Because of a timing issue we need to clear this history in onPageFinished as well as
-         * onPageStarted. However we only want to do this if the doClearHistory boolean is set to
-         * true. You see when you load a url with a # in it which is common in jQuery applications
-         * onPageStared is not called. Clearing the history at that point would break jQuery apps.
-         */
-        if (this.doClearHistory) {
-            view.clearHistory();
-            this.doClearHistory = false;
-        }
-
-        // Clear timeout flag
-        this.appView.loadUrlTimeout++;
-
-        // Broadcast message that page has loaded
-        this.appView.postMessage("onPageFinished", url);
-
-        // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
-        if (this.appView.getVisibility() == View.INVISIBLE) {
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        Thread.sleep(2000);
-                        cordova.getActivity().runOnUiThread(new Runnable() {
-                            public void run() {
-                                appView.postMessage("spinner", "stop");
-                            }
-                        });
-                    } catch (InterruptedException e) {
-                    }
-                }
-            });
-            t.start();
-        }
-
-        // Shutdown if blank loaded
-        if (url.equals("about:blank")) {
-            appView.postMessage("exit", null);
-        }
-    }
-
-    /**
+     /**
      * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable).
      * The errorCode parameter corresponds to one of the ERROR_* constants.
      *
@@ -221,29 +138,14 @@ public class CordovaWebViewClient extends WebViewClient {
      * @param failingUrl    The url that failed to load.
      */
     @Override
-    public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-        // Ignore error due to stopLoading().
-        if (!isCurrentlyLoading) {
-            return;
-        }
+    public void onReceivedLoadError(XWalkView view, int errorCode, String description,
+            String failingUrl) {
         LOG.d(TAG, "CordovaWebViewClient.onReceivedError: Error code=%s Description=%s URL=%s", errorCode, description, failingUrl);
 
         // Clear timeout flag
         this.appView.loadUrlTimeout++;
 
-        // If this is a "Protocol Not Supported" error, then revert to the previous
-        // page. If there was no previous page, then punt. The application's config
-        // is likely incorrect (start page set to sms: or something like that)
-        if (errorCode == WebViewClient.ERROR_UNSUPPORTED_SCHEME) {
-            if (view.canGoBack()) {
-                view.goBack();
-                return;
-            } else {
-                super.onReceivedError(view, errorCode, description, failingUrl);
-            }
-        }
-
-        // Handle other errors by passing them to the webview in JS
+        // Handle error
         JSONObject data = new JSONObject();
         try {
             data.put("errorCode", errorCode);
@@ -254,42 +156,12 @@ public class CordovaWebViewClient extends WebViewClient {
         }
         this.appView.postMessage("onReceivedError", data);
     }
-
-    /**
-     * Notify the host application that an SSL error occurred while loading a resource.
-     * The host application must call either handler.cancel() or handler.proceed().
-     * Note that the decision may be retained for use in response to future SSL errors.
-     * The default behavior is to cancel the load.
-     *
-     * @param view          The WebView that is initiating the callback.
-     * @param handler       An SslErrorHandler object that will handle the user's response.
-     * @param error         The SSL error object.
-     */
-    @TargetApi(8)
-    @Override
-    public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-
-        final String packageName = this.cordova.getActivity().getPackageName();
-        final PackageManager pm = this.cordova.getActivity().getPackageManager();
-
-        ApplicationInfo appInfo;
-        try {
-            appInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
-            if ((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
-                // debug = true
-                handler.proceed();
-                return;
-            } else {
-                // debug = false
-                super.onReceivedSslError(view, handler, error);
-            }
-        } catch (NameNotFoundException e) {
-            // When it doubt, lock it out!
-            super.onReceivedSslError(view, handler, error);
-        }
+    
+	@Override
+    public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+        return helper.shouldOverrideUrlLoading(view, url);
     }
-
-
+    
     /**
      * Sets the authentication token.
      *

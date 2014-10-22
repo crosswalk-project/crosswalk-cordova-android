@@ -73,6 +73,7 @@
               todir="assets/www"
               preservelastmodified="true"
               failonerror="true"
+              overwrite="true"
               verbose="true" />
     </target>
 <!--

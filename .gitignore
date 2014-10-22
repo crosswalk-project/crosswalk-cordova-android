@@ -16,6 +16,7 @@ framework/assets/www/phonegap-*.js
 framework/libs
 framework/javadoc-public
 framework/javadoc-private
+framework/xwalk_core_library
 test/libs
 example
 ./test
@@ -37,3 +38,7 @@ Desktop.ini
 # IntelliJ IDEA files
 *.iml
 .idea
+# Eclipse files
+.classpath
+.project
+.settings
