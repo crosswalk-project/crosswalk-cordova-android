@@ -252,7 +252,7 @@ public class CordovaChromeClient extends XWalkUIClient {
         isCurrentlyLoading = true;
 
         // Flush stale messages.
-        this.appView.bridge.getMessageQueue().reset();
+        this.appView.bridge.reset(url);
 
         // Broadcast message that page has loaded
         this.appView.postMessage("onPageStarted", url);
