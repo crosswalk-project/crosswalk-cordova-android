@@ -186,6 +186,34 @@ public class CordovaWebViewClient extends XWalkResourceClient {
     }
 
     /**
+    * Notify the host application that an SSL error occurred while loading a
+    * resource. The host application must call either callback.onReceiveValue(true)
+    * or callback.onReceiveValue(false). Note that the decision may be
+    * retained for use in response to future SSL errors. The default behavior
+    * is to pop up a dialog.
+    */
+    public void onReceivedSslError(XWalkView view, ValueCallback<Boolean> callback, SslError error) {
+        final String packageName = this.cordova.getActivity().getPackageName();
+        final PackageManager pm = this.cordova.getActivity().getPackageManager();
+
+        ApplicationInfo appInfo;
+        try {
+            appInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+            if ((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+                // debug = true
+                callback.onReceiveValue(true);
+                return;
+            } else {
+                // debug = false
+                callback.onReceiveValue(false);
+            }
+        } catch (NameNotFoundException e) {
+            // When it doubt, lock it out!
+            callback.onReceiveValue(false);
+        }
+    }
+
+    /**
      * Sets the authentication token.
      *
      * @param authenticationToken
