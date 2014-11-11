@@ -190,6 +190,7 @@ public class CordovaWebView extends XWalkView {
         this.setVerticalScrollBarEnabled(false);
         // TODO: The Activity is the one that should call requestFocus().
         if (shouldRequestFocusOnInit()) {
+            this.setFocusableInTouchMode(true);
             this.requestFocusFromTouch();
         }
 
@@ -702,6 +703,12 @@ public class CordovaWebView extends XWalkView {
         else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
             sendJavascriptEvent("searchbutton");
             return true;
+        }
+        // Request focus on XWalkView
+        else if((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) &&
+                !isFocused()) {
+            requestFocus();
+            return super.dispatchKeyEvent(event);
         }
 
         //Does webkit change this behavior?
