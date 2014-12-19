@@ -207,8 +207,20 @@ public class SplashScreenInternal extends CordovaPlugin {
                 // Create and show the dialog
                 splashDialog = new Dialog(webView.getContext(), android.R.style.Theme_Translucent_NoTitleBar);
                 // check to see if the splash screen should be full screen
-                if(getBooleanProperty("FullScreen", false)) {
+                if(getBooleanProperty("FullScreen", false))
+                {
                     toggleFullscreen(splashDialog.getWindow());
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        splashDialog.getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                            @Override
+                            public void onSystemUiVisibilityChange(int visibility) {
+                                if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                                    setSystemUiVisibilityMode(splashDialog.getWindow());
+                                }
+                            }
+                        });
+                    }
                 }
 
                 splashDialog.setContentView(splashLayout);

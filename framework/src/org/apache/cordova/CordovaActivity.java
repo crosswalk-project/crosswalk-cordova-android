@@ -212,11 +212,22 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         
         if(preferences.getBoolean("SetFullscreen", false))
         {
-            Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will  be removed in a future version.");
+            Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else if (preferences.getBoolean("Fullscreen", false)) {
             toggleFullscreen(getWindow());
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                    @Override
+                    public void onSystemUiVisibilityChange(int visibility) {
+                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                            setSystemUiVisibilityMode(getWindow());
+                        }
+                    }
+                });
+            }
         } else {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -292,7 +303,15 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @SuppressLint("NewApi")
     private void toggleFullscreen(Window window) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            final int uiOptions =
+            setSystemUiVisibilityMode(window);
+        } else {
+            window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+    }
+
+    private void setSystemUiVisibilityMode(Window window) {
+        final int uiOptions =
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -300,11 +319,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                     | View.SYSTEM_UI_FLAG_FULLSCREEN
                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
-            window.getDecorView().setSystemUiVisibility(uiOptions);
-        } else {
-            window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
+        window.getDecorView().setSystemUiVisibility(uiOptions);
     }
 
     /**
