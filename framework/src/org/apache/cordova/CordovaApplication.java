@@ -15,20 +15,13 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
+*/
+package org.apache.cordova;
+
+import org.xwalk.core.XWalkApplication;
+
+/**
+ * Developers must use CordovaApplication or extends it.
  */
-
-package __ID__;
-
-import android.os.Bundle;
-import org.apache.cordova.*;
-
-public class __ACTIVITY__ extends CordovaActivity
-{
-    @Override
-    protected void onXWalkReady()
-    {
-        super.onXWalkReady();
-        // Set by <content src="index.html" /> in config.xml
-        loadUrl(launchUrl);
-    }
+public class CordovaApplication extends XWalkApplication {
 }

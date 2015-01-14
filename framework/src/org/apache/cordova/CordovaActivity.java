@@ -23,11 +23,9 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xwalk.core.XWalkActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -76,9 +74,8 @@ import android.widget.LinearLayout;
  *
  *     public class Example extends CordovaActivity {
  *       &#64;Override
- *       public void onCreate(Bundle savedInstanceState) {
- *         super.onCreate(savedInstanceState);
- *         super.init();
+ *       public void onXWalkReady() {
+ *         super.onXWalkReady();
  *         // Load your application
  *         loadUrl(launchUrl);
  *       }
@@ -92,7 +89,7 @@ import android.widget.LinearLayout;
  * deprecated in favor of the config.xml file.
  *
  */
-public class CordovaActivity extends Activity implements CordovaInterface {
+public class CordovaActivity extends XWalkActivity implements CordovaInterface {
     public static String TAG = "CordovaActivity";
 
     // The webview for our app
@@ -1172,5 +1169,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             String cClass = this.activityResultCallback.getClass().getName();
             outState.putString("callbackClass", cClass);
         }
+    }
+
+    @Override
+    protected void onXWalkReady() {
+        init();
     }
 }
