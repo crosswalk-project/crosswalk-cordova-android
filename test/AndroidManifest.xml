@@ -53,7 +53,7 @@
         android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="org.apache.cordova.test" />
 
-    <application
+    <application android:name="org.apache.cordova.CordovaApplication"
         android:icon="@drawable/icon"
         android:label="@string/app_name" >
         <uses-library android:name="android.test.runner" />
