@@ -26,6 +26,7 @@ var shell = require('shelljs'),
     check_reqs = require('./check_reqs'),
     ROOT    = path.join(__dirname, '..', '..'),
     XWALK_LIBRARY_PATH= path.join(ROOT, 'framework', 'xwalk_core_library');
+    XWALK_SHARED_LIBRARY_PATH= path.join(ROOT, 'framework', 'xwalk_shared_library');
 
 // Returns a promise.
 function exec(command, opt_cwd) {
@@ -51,7 +52,7 @@ function getFrameworkDir(projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
-function copyJsAndLibrary(projectPath, shared, projectName) {
+function copyJsAndLibrary(projectPath, shared, projectName, xwalkSharedLibrary) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     shell.cp('-f', path.join(ROOT, 'framework', 'assets', 'www', 'cordova.js'), path.join(projectPath, 'assets', 'www', 'cordova.js'));
     // Don't fail if there are no old jars.
@@ -74,7 +75,12 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
         shell.cp('-f', path.join(ROOT, 'framework', 'project.properties'), nestedCordovaLibPath);
         shell.cp('-f', path.join(ROOT, 'framework', 'build.gradle'), nestedCordovaLibPath);
         shell.cp('-r', path.join(ROOT, 'framework', 'src'), nestedCordovaLibPath);
-        shell.cp('-r', path.join(ROOT, 'framework', 'xwalk_core_library'), nestedCordovaLibPath);
+        if (xwalkSharedLibrary) {
+            shell.mkdir(path.join(nestedCordovaLibPath, 'xwalk_core_library'));
+            shell.cp('-r', path.join(ROOT, 'framework', 'xwalk_shared_library/*'), path.join(nestedCordovaLibPath, 'xwalk_core_library'));
+        } else {
+            shell.cp('-r', path.join(ROOT, 'framework', 'xwalk_core_library'), nestedCordovaLibPath);
+        }
         // Create an eclipse project file and set the name of it to something unique.
         // Without this, you can't import multiple CordovaLib projects into the same workspace.
         var eclipseProjectFilePath = path.join(nestedCordovaLibPath, '.project');
@@ -203,7 +209,7 @@ function validateProjectName(project_name) {
  * Returns a promise.
  */
 
-exports.createProject = function(project_path, package_name, project_name, project_template_dir, use_shared_project, use_cli_template) {
+exports.createProject = function(project_path, package_name, project_name, project_template_dir, use_shared_project, use_cli_template, xwalk_shared_library) {
     var VERSION = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
 
     // Set default values for path, package and name
@@ -233,6 +239,13 @@ exports.createProject = function(project_path, package_name, project_name, proje
     } else {
         // TODO(wang16): download xwalk core library here
         return Q.reject('No XWalk Library Project found. Please download it and extract it to $XWALK_LIBRARY_PATH')
+    }
+    if (xwalk_shared_library) {
+        if (fs.existsSync(XWALK_SHARED_LIBRARY_PATH)) {
+            exec('android update lib-project --path "' + XWALK_SHARED_LIBRARY_PATH + '" --target "' + target_api + '"' )
+        } else {
+            return Q.reject('No XWalk Shared Library Project found. Please download it and extract it to $XWALK_SHARED_LIBRARY_PATH')
+        }
     }
 
     //Make the package conform to Java package types
@@ -275,7 +288,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
             }
 
             // copy cordova.js, cordova.jar
-            copyJsAndLibrary(project_path, use_shared_project, safe_activity_name);
+            copyJsAndLibrary(project_path, use_shared_project, safe_activity_name, xwalk_shared_library);
 
             // interpolate the activity name and package
             shell.mkdir('-p', activity_dir);
@@ -293,7 +306,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
             copyBuildRules(project_path);
         });
         // Link it to local android install.
-        writeProjectProperties(project_path, target_api);
+        writeProjectProperties(project_path, target_api, use_shared_project);
     }).then(function() {
         console.log('Project successfully created.');
     });
@@ -316,14 +329,14 @@ function extractProjectNameFromManifest(projectPath) {
 }
 
 // Returns a promise.
-exports.updateProject = function(projectPath, shared) {
+exports.updateProject = function(projectPath, shared, xwalkSharedLibrary) {
     var newVersion = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
     // Check that requirements are met and proper targets are installed
     return check_reqs.run()
     .then(function() {
         var projectName = extractProjectNameFromManifest(projectPath);
         var target_api = check_reqs.get_target();
-        copyJsAndLibrary(projectPath, shared, projectName);
+        copyJsAndLibrary(projectPath, shared, projectName, xwalkSharedLibrary);
         copyScripts(projectPath);
         copyBuildRules(projectPath);
         removeDebuggableFromManifest(projectPath);
