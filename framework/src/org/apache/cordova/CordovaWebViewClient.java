@@ -39,7 +39,6 @@ import android.view.View;
 import android.webkit.ValueCallback;
 //import android.webkit.WebView;
 //import android.webkit.WebViewClient;
-import org.chromium.net.NetError;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkView;
 

@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xwalk.core.XWalkActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -72,6 +73,10 @@ import android.widget.LinearLayout;
  *       &#64;Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
+ *       }
+ *
+ *       &#64;Override
+ *       public void onXWalkReady() {
  *         super.init();
  *         // Load your application
  *         loadUrl(launchUrl);
@@ -86,7 +91,7 @@ import android.widget.LinearLayout;
  * deprecated in favor of the config.xml file.
  *
  */
-public class CordovaActivity extends Activity implements CordovaInterface {
+public abstract class CordovaActivity extends XWalkActivity implements CordovaInterface {
     public static String TAG = "CordovaActivity";
 
     // The webview for our app

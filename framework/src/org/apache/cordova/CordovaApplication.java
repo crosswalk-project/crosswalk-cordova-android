@@ -16,22 +16,9 @@
        specific language governing permissions and limitations
        under the License.
 */
-
 package org.apache.cordova;
 
-/**
- * This used to be the class that should be extended by application
- * developers, but everything has been moved to CordovaActivity. So
- * you should extend CordovaActivity instead of DroidGap. This class
- * will be removed at a future time.
- *
- * @see CordovaActivity
- * @deprecated
- */
-@Deprecated
-public class DroidGap extends CordovaActivity {
-    @Override
-    protected void onXWalkReady() {
-    }
+import org.xwalk.core.XWalkApplication;
 
+public class CordovaApplication extends XWalkApplication {
 }
