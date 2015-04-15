@@ -928,12 +928,17 @@ public class CordovaWebView extends XWalkView {
      */
     @SuppressLint("NewApi")
     public void toggleFullscreen(Window window) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        if (isImmersiveMode()) {
             setSystemUiVisibilityMode(window);
         } else {
             window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
+    }
+
+    private boolean isImmersiveMode() {
+        return !preferences.getBoolean("disableImmersive", false) &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
 
     public void setSystemUiVisibilityMode(Window window) {

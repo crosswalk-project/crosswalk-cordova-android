@@ -221,9 +221,9 @@ public abstract class CordovaActivity extends XWalkActivity implements CordovaIn
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else if (preferences.getBoolean("Fullscreen", false)) {
-            this.appView.toggleFullscreen(getWindow());
+            appView.toggleFullscreen(getWindow());
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (appView.isImmersiveMode()) {
                 getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
                     @Override
                     public void onSystemUiVisibilityChange(int visibility) {

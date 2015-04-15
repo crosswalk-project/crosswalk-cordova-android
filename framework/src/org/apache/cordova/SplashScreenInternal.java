@@ -217,7 +217,7 @@ public class SplashScreenInternal extends CordovaPlugin {
                 {
                     webView.toggleFullscreen(splashDialog.getWindow());
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    if (webView.isImmersiveMode()) {
                         splashDialog.getWindow().getDecorView().
                                 setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
                             @Override
