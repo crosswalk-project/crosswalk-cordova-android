@@ -228,7 +228,7 @@ public abstract class CordovaActivity extends XWalkActivity implements CordovaIn
         } else if (preferences.getBoolean("Fullscreen", false)) {
             toggleFullscreen(getWindow());
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (isImmersiveMode()) {
                 getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
                     @Override
                     public void onSystemUiVisibilityChange(int visibility) {
@@ -315,12 +315,17 @@ public abstract class CordovaActivity extends XWalkActivity implements CordovaIn
      */
     @SuppressLint("NewApi")
     private void toggleFullscreen(Window window) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        if (isImmersiveMode()) {
             setSystemUiVisibilityMode(window);
         } else {
             window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
+    }
+
+    private boolean isImmersiveMode() {
+        return !preferences.getBoolean("disableImmersive", false) &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
 
     private void setSystemUiVisibilityMode(Window window) {
@@ -1042,7 +1047,7 @@ public abstract class CordovaActivity extends XWalkActivity implements CordovaIn
                 {
                     toggleFullscreen(splashDialog.getWindow());
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    if (isImmersiveMode()) {
                         splashDialog.getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
                             @Override
                             public void onSystemUiVisibilityChange(int visibility) {
