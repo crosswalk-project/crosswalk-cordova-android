@@ -22,7 +22,12 @@ exports.getArgs = function(argv) {
     var posArgs = [];
     for (var i = 2, arg; arg = argv[i] || i < argv.length; ++i) {
         if (/^--/.exec(arg)) {
-            ret[arg] = true;
+            if (arg.indexOf("=") != -1) {
+                var arr = arg.split("=");
+                ret[arr[0]] = arr[1];
+            } else {
+                ret[arg] = true;
+            }
         } else {
             posArgs.push(arg);
         }

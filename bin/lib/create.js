@@ -209,7 +209,8 @@ function validateProjectName(project_name) {
  * Returns a promise.
  */
 
-exports.createProject = function(project_path, package_name, project_name, project_template_dir, use_shared_project, use_cli_template, xwalk_shared_library) {
+exports.createProject = function(project_path, package_name, project_name, project_template_dir,
+        use_shared_project, use_cli_template, xwalk_shared_library, xwalk_apk_url) {
     var VERSION = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
 
     // Set default values for path, package and name
@@ -220,6 +221,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
     project_template_dir = typeof project_template_dir !== 'undefined' ? 
                            project_template_dir : 
                            path.join(ROOT, 'bin', 'templates', 'project');
+    xwalk_apk_url = typeof xwalk_apk_url !== 'undefined' ? xwalk_apk_url : "";
 
     var safe_activity_name = project_name.replace(/\W/g, '');
     var package_as_path = package_name.replace(/\./g, path.sep);
@@ -302,6 +304,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
             shell.sed('-i', /__ACTIVITY__/, safe_activity_name, manifest_path);
             shell.sed('-i', /__PACKAGE__/, package_name, manifest_path);
             shell.sed('-i', /__APILEVEL__/, target_api.split('-')[1], manifest_path);
+            shell.sed('-i', /__XWALKAPKURL__/, xwalk_apk_url, manifest_path);
             copyScripts(project_path);
             copyBuildRules(project_path);
         });
