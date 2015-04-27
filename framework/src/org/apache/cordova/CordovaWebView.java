@@ -516,6 +516,14 @@ public class CordovaWebView extends XWalkView {
         }
     }
 
+    /**
+     * Gets whether this WebView has a back history item.
+     *
+     * @return true if can go back, false if we are already at top
+     */
+    public boolean canGoBack() {
+        return this.getNavigationHistory().canGoBack();
+    }
 
     /**
      * Go to previous page in history.  (We manage our own history)
