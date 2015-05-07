@@ -944,7 +944,7 @@ public class CordovaWebView extends XWalkView {
         }
     }
 
-    private boolean isImmersiveMode() {
+    public boolean isImmersiveMode() {
         return !preferences.getBoolean("disableImmersive", false) &&
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
