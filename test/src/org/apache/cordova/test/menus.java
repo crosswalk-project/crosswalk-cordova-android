@@ -32,6 +32,10 @@ public class menus extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         // need the title to be shown (config.xml) for the options menu to be visible
         super.init();
         super.registerForContextMenu(super.appView);

@@ -28,10 +28,15 @@
         android:anyDensity="true"
         />
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-    <application android:icon="@drawable/icon" android:label="@string/app_name"
+    <application android:name="org.apache.cordova.CordovaApplication"
+        android:icon="@drawable/icon" android:label="@string/app_name"
         android:hardwareAccelerated="true" android:supportsRtl="true">
+        <meta-data android:name="xwalk_apk_url" android:value="__XWALKAPKURL__" />
         <activity android:name="__ACTIVITY__"
                 android:label="@string/activity_name"
                 android:launchMode="singleTop"

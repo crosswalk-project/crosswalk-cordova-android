@@ -26,7 +26,10 @@ public class backgroundcolor extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
+    @Override
+    protected void onXWalkReady() {
         // backgroundColor can also be set in cordova.xml, but you must use the number equivalent of the color.  For example, Color.RED is
         //      <preference name="backgroundColor" value="-65536" />
         preferences.set("backgroundColor", Color.GREEN);

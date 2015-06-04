@@ -25,6 +25,10 @@ public class loading extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         preferences.set("loadingDialog", "Testing,Loading...");
         super.loadUrl("http://www.google.com");
     }

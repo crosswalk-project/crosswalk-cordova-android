@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xwalk.core.XWalkActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -34,14 +35,19 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.Point;
+import android.hardware.SensorManager;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -67,6 +73,10 @@ import android.widget.LinearLayout;
  *       &#64;Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
+ *       }
+ *
+ *       &#64;Override
+ *       public void onXWalkReady() {
  *         super.init();
  *         // Load your application
  *         loadUrl(launchUrl);
@@ -81,7 +91,7 @@ import android.widget.LinearLayout;
  * deprecated in favor of the config.xml file.
  *
  */
-public class CordovaActivity extends Activity implements CordovaInterface {
+public abstract class CordovaActivity extends XWalkActivity implements CordovaInterface {
     public static String TAG = "CordovaActivity";
 
     // The webview for our app
@@ -211,8 +221,18 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else if (preferences.getBoolean("Fullscreen", false)) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            appView.toggleFullscreen(getWindow());
+
+            if (appView.isImmersiveMode()) {
+                getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                    @Override
+                    public void onSystemUiVisibilityChange(int visibility) {
+                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                            appView.setSystemUiVisibilityMode(getWindow());
+                        }
+                    }
+                });
+            }
         } else {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -401,7 +421,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     @Deprecated // Call method on appView directly.
     public void clearHistory() {
-        this.appView.clearHistory();
+        if (this.appView.getNavigationHistory() != null) {
+            this.appView.getNavigationHistory().clear();
+        }
     }
 
     /**
@@ -549,6 +571,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     protected void onResume() {
         super.onResume();
+
         LOG.d(TAG, "Resuming the App");
         
         if (this.activityState == ACTIVITY_STARTING) {
@@ -562,6 +585,11 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         // Force window to have focus, so application always
         // receive user input. Workaround for some devices (Samsung Galaxy Note 3 at least)
         this.getWindow().getDecorView().requestFocus();
+
+        // When back from background, we need to reset fullscreen mode.
+        if(getBooleanProperty("FullScreen", false)) {
+            this.appView.toggleFullscreen(getWindow());
+        }
 
         this.appView.handleResume(this.keepRunning, this.activityResultKeepRunning);
 
@@ -582,7 +610,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     public void onDestroy() {
         LOG.d(TAG, "CordovaActivity.onDestroy()");
-        super.onDestroy();
 
         if (this.appView != null) {
             appView.handleDestroy();
@@ -590,6 +617,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         else {
             this.activityState = ACTIVITY_EXITING; 
         }
+
+        super.onDestroy();
     }
 
     /**
@@ -703,6 +732,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         LOG.d(TAG, "Incoming Result. Request code = " + requestCode);
         super.onActivityResult(requestCode, resultCode, intent);
+        if (this.appView != null)
+            this.appView.onActivityResult(requestCode, resultCode, intent);
+
         CordovaPlugin callback = this.activityResultCallback;
         if(callback == null && initCallbackClass != null) {
             // The application was restarted, but had defined an initial callback
@@ -882,12 +914,12 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
-        if (appView != null && (appView.isCustomViewShowing() || appView.getFocusedChild() != null ) &&
+        if (appView != null && (appView.hasEnteredFullscreen() || appView.getFocusedChild() != null ) &&
                 (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
             return appView.onKeyUp(keyCode, event);
         } else {
             return super.onKeyUp(keyCode, event);
-    	}
+        }
     }
     
     /*

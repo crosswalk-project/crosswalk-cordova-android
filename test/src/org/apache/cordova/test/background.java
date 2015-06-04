@@ -26,6 +26,10 @@ public class background extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         //super.init(new FixWebView(this), new CordovaWebViewClient(this), new CordovaChromeClient(this));
         preferences.set("keepRunning", false);
         super.loadUrl("file:///android_asset/www/background/index.html");

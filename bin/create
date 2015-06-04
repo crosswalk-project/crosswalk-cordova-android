@@ -21,6 +21,8 @@
 var path = require('path');
 var create = require('./lib/create');
 var args  = require('./lib/simpleargs').getArgs(process.argv);
+var apk_url = args['--xwalk-apk-url'];
+var shared_library = args['--xwalk-shared-library'];
 
 if (args['--help'] || args._.length === 0) {
     console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'create')) + ' <path_to_new_project> <package_name> <project_name> [<template_path>] [--shared]');
@@ -29,8 +31,23 @@ if (args['--help'] || args._.length === 0) {
     console.log('    <project_name>: Project name');
     console.log('    <template_path>: Path to a custom application template to use');
     console.log('    --shared will use the CordovaLib project directly instead of making a copy.');
+    console.log('    --xwalk-shared-library will use Crosswalk shared mode to package the project that without xwalk so library.');
+    console.log('    --xwalk-apk-url configure the download URL of the Crosswalk runtime library, it requires --xwalk-shared-library.');
     process.exit(1);
 }
 
-create.createProject(args._[0], args._[1], args._[2], args._[3], args['--shared'], args['--cli']).done();
+if (typeof apk_url != 'undefined' &&
+        (typeof apk_url != 'string' || apk_url.length == 0)) {
+    console.log('    --xwalk-apk-url expects a URL.');
+    process.exit(1);
+}
+if (apk_url && !shared_library) {
+    console.log('    --xwalk-apk-url must be used together with --xwalk-shared-library.');
+    process.exit(1);
+}
+if (args['--shared'] && (apk_url || shared_library)) {
+    console.log('    --shared cannot be used with --xwalk-apk-url and --xwalk-shared-library.');
+    process.exit(1);
+}
 
+create.createProject(args._[0], args._[1], args._[2], args._[3], args['--shared'], args['--cli'], args['--xwalk-shared-library'], args['--xwalk-apk-url']).done();

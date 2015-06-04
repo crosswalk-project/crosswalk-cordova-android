@@ -40,7 +40,6 @@ public class HtmlNotFoundTest extends ActivityInstrumentationTestCase2<htmlnotfo
     super("org.apache.cordova.test",htmlnotfound.class);
   }
   
-  
   protected void setUp() throws Exception {
     super.setUp();
     testActivity = this.getActivity();

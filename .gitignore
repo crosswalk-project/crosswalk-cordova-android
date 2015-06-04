@@ -16,6 +16,8 @@ framework/assets/www/phonegap-*.js
 framework/libs
 framework/javadoc-public
 framework/javadoc-private
+framework/xwalk_core_library
+framework/xwalk_shared_library
 test/libs
 example
 ./test
@@ -40,3 +42,7 @@ Desktop.ini
 npm-debug.log
 /node_modules
 /framework/build
+# Eclipse files
+.classpath
+.project
+.settings

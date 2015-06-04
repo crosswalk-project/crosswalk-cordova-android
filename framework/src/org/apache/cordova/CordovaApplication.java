@@ -16,24 +16,9 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
+package org.apache.cordova;
 
-import android.os.Bundle;
-import org.apache.cordova.*;
+import org.xwalk.core.XWalkApplication;
 
-public class splashscreen extends CordovaActivity {
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    protected void onXWalkReady() {
-        super.init();
-
-        // Show splashscreen
-        preferences.set("splashscreen", "sandy");
-
-        super.loadUrl("file:///android_asset/www/splashscreen/index.html", 2000);
-    }
+public class CordovaApplication extends XWalkApplication {
 }

@@ -99,10 +99,10 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
      * The final call you receive before your activity is destroyed.
      */
     public void onDestroy() {
-        super.onDestroy();
         if (cordovaWebView != null) {
             // Send destroy event to JavaScript
             cordovaWebView.handleDestroy();
         }
+        super.onDestroy();
     }
 }

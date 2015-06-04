@@ -19,7 +19,8 @@
 package org.apache.cordova.test;
 
 import android.os.Bundle;
-import android.webkit.WebView;
+//import android.webkit.WebView;
+import org.xwalk.core.XWalkView;
 
 import org.apache.cordova.*;
 import org.apache.cordova.LOG;
@@ -42,11 +43,7 @@ public class whitelist extends MainTestActivity {
             super(ctx, app);
         }
 
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            LOG.d("whitelist", "shouldOverrideUrlLoading(" + url + ")");
-            LOG.d("whitelist", "originalUrl=" + view.getOriginalUrl());
-            return super.shouldOverrideUrlLoading(view, url);
-        }
+        // TODO(gaochun): Implement shouldOverrideUrlLoading()
+        // in CordovaWebViewClient and add the related tests here.
     }
 }

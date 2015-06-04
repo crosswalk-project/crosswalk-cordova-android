@@ -27,6 +27,10 @@ public class MainTestActivity extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         super.loadUrl("file:///android_asset/www/index.html");
     }
 }

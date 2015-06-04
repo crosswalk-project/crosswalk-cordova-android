@@ -32,6 +32,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
@@ -45,13 +47,13 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
    
-    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="19"/>
+    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="21"/>
 
     <instrumentation
         android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="org.apache.cordova.test" />
 
-    <application
+    <application android:name="org.apache.cordova.CordovaApplication"
         android:icon="@drawable/icon"
         android:label="@string/app_name" >
         <uses-library android:name="android.test.runner" />

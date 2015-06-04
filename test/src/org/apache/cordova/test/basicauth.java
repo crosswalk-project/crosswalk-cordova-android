@@ -25,6 +25,10 @@ public class basicauth extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         super.init();
 
         // LogCat: onReceivedHttpAuthRequest(browserspy.dk:80,BrowserSpy.dk - HTTP Password Test)

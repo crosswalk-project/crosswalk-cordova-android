@@ -25,6 +25,10 @@ public class errorurl extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         preferences.set("errorUrl", "file:///android_asset/www/htmlnotfound/error.html");
         super.loadUrl("file:///android_asset/www/htmlnotfound/index.html");
     }

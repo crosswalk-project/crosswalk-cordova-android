@@ -41,7 +41,10 @@ public class SabotagedActivity extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);        
-        
+    }
+
+    @Override
+    protected void onXWalkReady() {
 //        copyErrorAsset();
         super.init();
         super.loadUrl(Config.getStartUrl());

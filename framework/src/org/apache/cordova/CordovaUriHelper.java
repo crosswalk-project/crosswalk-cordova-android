@@ -23,7 +23,8 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.webkit.WebView;
+//import android.webkit.WebView;
+import org.xwalk.core.XWalkView;
 
 class CordovaUriHelper {
     
@@ -47,7 +48,7 @@ class CordovaUriHelper {
      * @return              true to override, false for default behavior
      */
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-    boolean shouldOverrideUrlLoading(WebView view, String url) {
+    boolean shouldOverrideUrlLoading(XWalkView view, String url) {
         // Give plugins the chance to handle the url
         if (this.appView.pluginManager.onOverrideUrlLoading(url)) {
             // Do nothing other than what the plugins wanted.

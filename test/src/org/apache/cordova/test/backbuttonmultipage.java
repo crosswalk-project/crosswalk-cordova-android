@@ -25,6 +25,10 @@ public class backbuttonmultipage extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         super.loadUrl("file:///android_asset/www/backbuttonmultipage/index.html");
     }
 }
