@@ -25,6 +25,10 @@ public class timeout extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         super.init();
 
         // Short timeout to cause error

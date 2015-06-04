@@ -337,26 +337,6 @@ public class CordovaChromeClient extends XWalkUIClient {
         uploadMsg.onReceiveValue(null);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    @Override
-    public boolean onShowFileChooser(WebView webView, final ValueCallback<Uri[]> filePathsCallback, final WebChromeClient.FileChooserParams fileChooserParams) {
-        Intent intent = fileChooserParams.createIntent();
-        try {
-            cordova.startActivityForResult(new CordovaPlugin() {
-                @Override
-                public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-                    Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, intent);
-                    Log.d(TAG, "Receive file chooser URL: " + result);
-                    filePathsCallback.onReceiveValue(result);
-                }
-            }, intent, FILECHOOSER_RESULTCODE);
-        } catch (ActivityNotFoundException e) {
-            Log.w("No activity found to handle file chooser intent.", e);
-            filePathsCallback.onReceiveValue(null);
-        }
-        return true;
-    }
-
     public void destroyLastDialog(){
         if(lastHandledDialog != null){
                 lastHandledDialog.cancel();

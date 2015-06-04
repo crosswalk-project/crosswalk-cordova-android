@@ -25,6 +25,10 @@ public class iframe extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         super.loadUrl("file:///android_asset/www/iframe/index.html");
     }
 }

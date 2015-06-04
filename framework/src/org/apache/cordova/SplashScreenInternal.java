@@ -21,11 +21,16 @@ package org.apache.cordova;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.res.Configuration;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.hardware.SensorManager;
 import android.graphics.Color;
+import android.graphics.Point;
+import android.os.Build;
 import android.os.Handler;
 import android.view.Display;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -147,7 +152,7 @@ public class SplashScreenInternal extends CordovaPlugin {
     private int getScreenOrientation() {
         // getResources().getConfiguration().orientation returns wrong value in some devices.
         // Below is another way to calculate screen orientation.
-        Display display = getWindowManager().getDefaultDisplay();
+        Display display = cordova.getActivity().getWindowManager().getDefaultDisplay();
         Point size = new Point();
         if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
             size.set(display.getWidth(), display.getHeight());
@@ -165,6 +170,7 @@ public class SplashScreenInternal extends CordovaPlugin {
     }
 
     private LinearLayout getSplashLayout() {
+        final int drawableId = preferences.getInteger("SplashDrawableId", 0);
         // Get reference to display
         Display display = cordova.getActivity().getWindowManager().getDefaultDisplay();
 
@@ -207,16 +213,17 @@ public class SplashScreenInternal extends CordovaPlugin {
                 // Create and show the dialog
                 splashDialog = new Dialog(webView.getContext(), android.R.style.Theme_Translucent_NoTitleBar);
                 // check to see if the splash screen should be full screen
-                if(getBooleanProperty("FullScreen", false))
+                if(preferences.getBoolean("FullScreen", false))
                 {
-                    toggleFullscreen(splashDialog.getWindow());
+                    webView.toggleFullscreen(splashDialog.getWindow());
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                        splashDialog.getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                        splashDialog.getWindow().getDecorView().
+                                setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
                             @Override
                             public void onSystemUiVisibilityChange(int visibility) {
                                 if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                                    setSystemUiVisibilityMode(splashDialog.getWindow());
+                                    webView.setSystemUiVisibilityMode(splashDialog.getWindow());
                                 }
                             }
                         });
@@ -228,7 +235,7 @@ public class SplashScreenInternal extends CordovaPlugin {
                 splashDialog.show();
 
                 mCurrentOrientation = getScreenOrientation();
-                splashOrientationListener = new OrientationEventListener(that,
+                splashOrientationListener = new OrientationEventListener(webView.getContext(),
                         SensorManager.SENSOR_DELAY_NORMAL) {
                     public void onOrientationChanged(int ori) {
                         if (splashDialog == null || !splashDialog.isShowing()) {

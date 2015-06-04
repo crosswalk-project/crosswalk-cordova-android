@@ -25,6 +25,10 @@ public class splashscreen extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         super.init();
 
         // Show splashscreen

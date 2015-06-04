@@ -43,6 +43,8 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 //import android.webkit.WebBackForwardList;
 //import android.webkit.WebHistoryItem;
@@ -203,21 +205,15 @@ public class CordovaWebView extends XWalkView {
         // nhu: N/A
         //settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
 
-        // Enable third-party cookies if on Lolipop. TODO: Make this configurable
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-        {
-            CookieManager cookieManager = CookieManager.getInstance();
-            cookieManager.setAcceptThirdPartyCookies(this, true);
-        }
-
         //We don't save any form data in the application
         // nhu: N/A
         //settings.setSaveFormData(false);
         //settings.setSavePassword(false);
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            Level17Apis.setMediaPlaybackRequiresUserGesture(settings, false);
-        }
+        //Will cover by XWALKPreferences setting in stati code.
+        //if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        //    Level17Apis.setMediaPlaybackRequiresUserGesture(settings, false);
+        //}
         
         // wang16: covered by XWalkPreferences setting in static code.
         //settings.setAllowUniversalAccessFromFileURLs(true);
@@ -440,7 +436,7 @@ public class CordovaWebView extends XWalkView {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
         if (url.startsWith("file://") || url.startsWith("javascript:") || url.startsWith("about:") || internalWhitelist.isUrlWhiteListed(url)) {
-            super.loadUrl(url, null);
+            super.load(url, null);
         }
     }
 
@@ -869,12 +865,12 @@ public class CordovaWebView extends XWalkView {
         return false;
     }
 
-    @TargetApi(17)
-    private static final class Level17Apis {
-        static void setMediaPlaybackRequiresUserGesture(WebSettings settings, boolean value) {
-            settings.setMediaPlaybackRequiresUserGesture(value);
-        }
-    }
+    //@TargetApi(17)
+    //private static final class Level17Apis {
+    //    static void setMediaPlaybackRequiresUserGesture(WebSettings settings, boolean value) {
+    //        settings.setMediaPlaybackRequiresUserGesture(value);
+    //    }
+    //}
 
     public void printBackForwardList() {
         XWalkNavigationHistory currentList = this.getNavigationHistory();
@@ -925,6 +921,31 @@ public class CordovaWebView extends XWalkView {
 
     public CordovaPreferences getPreferences() {
         return preferences;
+    }
+
+    /**
+     * Toggle fullscreen for window.
+     */
+    @SuppressLint("NewApi")
+    public void toggleFullscreen(Window window) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            setSystemUiVisibilityMode(window);
+        } else {
+            window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+    }
+
+    public void setSystemUiVisibilityMode(Window window) {
+        final int uiOptions =
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+        window.getDecorView().setSystemUiVisibility(uiOptions);
     }
 
     static {

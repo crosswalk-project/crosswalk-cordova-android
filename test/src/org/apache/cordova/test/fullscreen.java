@@ -25,6 +25,10 @@ public class fullscreen extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
 
         // Properties must be set before init() is called, since some are processed during init(). 
 

@@ -25,6 +25,10 @@ public class tests extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         super.init();
         //super.pluginManager.addService("Activity", "org.apache.cordova.test.ActivityPlugin");
         super.loadUrl("file:///android_asset/www/index.html");

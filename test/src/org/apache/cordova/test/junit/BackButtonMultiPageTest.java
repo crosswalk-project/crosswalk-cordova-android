@@ -51,8 +51,6 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
       innerContainer = (LinearLayout) containerView.getChildAt(0);
       testView = (CordovaWebView) innerContainer.getChildAt(0);
-      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/index.html");
-      sleep();
   }
 
   @UiThreadTest

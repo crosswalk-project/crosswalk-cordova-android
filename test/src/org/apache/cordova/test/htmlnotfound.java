@@ -25,6 +25,10 @@ public class htmlnotfound extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onXWalkReady() {
         super.init();
         super.loadUrl("file:///android_asset/www/htmlnotfound/index.html");
     }

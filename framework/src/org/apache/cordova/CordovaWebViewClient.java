@@ -162,29 +162,6 @@ public class CordovaWebViewClient extends XWalkResourceClient {
     }
 
     /**
-     * On received client cert request.
-     * The method forwards the request to any running plugins before using the default implementation.
-     *
-     * @param view
-     * @param request
-     */
-    @Override
-    @TargetApi(21)
-    public void onReceivedClientCertRequest (WebView view, ClientCertRequest request)
-    {
-
-        // Check if there is some plugin which can resolve this certificate request
-        PluginManager pluginManager = this.appView.pluginManager;
-        if (pluginManager != null && pluginManager.onReceivedClientCertRequest(this.appView, new CordovaClientCertRequest(request))) {
-            this.appView.loadUrlTimeout++;
-            return;
-        }
-
-        // By default pass to WebViewClient
-        super.onReceivedClientCertRequest(view, request);
-    }
-
-    /**
     * Notify the host application that an SSL error occurred while loading a
     * resource. The host application must call either callback.onReceiveValue(true)
     * or callback.onReceiveValue(false). Note that the decision may be

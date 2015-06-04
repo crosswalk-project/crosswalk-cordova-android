@@ -221,14 +221,14 @@ public abstract class CordovaActivity extends XWalkActivity implements CordovaIn
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else if (preferences.getBoolean("Fullscreen", false)) {
-            toggleFullscreen(getWindow());
+            this.appView.toggleFullscreen(getWindow());
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
                     @Override
                     public void onSystemUiVisibilityChange(int visibility) {
                         if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                            setSystemUiVisibilityMode(getWindow());
+                            appView.setSystemUiVisibilityMode(getWindow());
                         }
                     }
                 });
@@ -300,31 +300,6 @@ public abstract class CordovaActivity extends XWalkActivity implements CordovaIn
      */
     @Override public Activity getActivity() {
         return this;
-    }
-
-    /**
-     * Toggle fullscreen for window.
-     */
-    @SuppressLint("NewApi")
-    private void toggleFullscreen(Window window) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            setSystemUiVisibilityMode(window);
-        } else {
-            window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
-    }
-
-    private void setSystemUiVisibilityMode(Window window) {
-        final int uiOptions =
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-
-        window.getDecorView().setSystemUiVisibility(uiOptions);
     }
 
     /**
@@ -613,7 +588,7 @@ public abstract class CordovaActivity extends XWalkActivity implements CordovaIn
 
         // When back from background, we need to reset fullscreen mode.
         if(getBooleanProperty("FullScreen", false)) {
-            toggleFullscreen(getWindow());
+            this.appView.toggleFullscreen(getWindow());
         }
 
         this.appView.handleResume(this.keepRunning, this.activityResultKeepRunning);
