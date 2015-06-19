@@ -1115,8 +1115,13 @@ public abstract class CordovaActivity extends XWalkActivity implements CordovaIn
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
         //Determine if the focus is on the current view or not
-        if (appView != null && appView.getFocusedChild() != null && (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
-                    return appView.onKeyDown(keyCode, event);
+        if (appView != null && appView.getFocusedChild() != null &&
+                (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
+            if (!appView.onKeyDown(keyCode, event)) {
+                getActivity().finish();
+                return false;
+            }
+            return true;
         }
         else
             return super.onKeyDown(keyCode, event);
