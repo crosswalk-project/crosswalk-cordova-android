@@ -1,0 +1,2 @@
+xwalk --disable-web-security
+xwalk --ignore-gpu-blacklist

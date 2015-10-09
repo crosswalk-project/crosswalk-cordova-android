@@ -1,165 +1,65 @@
-/*
-       Licensed to the Apache Software Foundation (ASF) under one
-       or more contributor license agreements.  See the NOTICE file
-       distributed with this work for additional information
-       regarding copyright ownership.  The ASF licenses this file
-       to you under the Apache License, Version 2.0 (the
-       "License"); you may not use this file except in compliance
-       with the License.  You may obtain a copy of the License at
+/****************************************************************************
+ Copyright (c) 2010-2012 cocos2d-x.org
+ Copyright (c) 2008-2010 Ricardo Quesada
+ Copyright (c) 2011      Zynga Inc.
 
-         http://www.apache.org/licenses/LICENSE-2.0
+ http://www.cocos2d-x.org
 
-       Unless required by applicable law or agreed to in writing,
-       software distributed under the License is distributed on an
-       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-       KIND, either express or implied.  See the License for the
-       specific language governing permissions and limitations
-       under the License.
-*/
 
-var deviceInfo = function() {
-    document.getElementById("platform").innerHTML = device.platform;
-    document.getElementById("version").innerHTML = device.version;
-    document.getElementById("uuid").innerHTML = device.uuid;
-    document.getElementById("name").innerHTML = device.name;
-    document.getElementById("width").innerHTML = screen.width;
-    document.getElementById("height").innerHTML = screen.height;
-    document.getElementById("colorDepth").innerHTML = screen.colorDepth;
-};
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
-var getLocation = function() {
-    var suc = function(p) {
-        alert(p.coords.latitude + " " + p.coords.longitude);
-    };
-    var locFail = function() {
-    };
-    navigator.geolocation.getCurrentPosition(suc, locFail);
-};
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
 
-var beep = function() {
-    navigator.notification.beep(2);
-};
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+var cocos2dApp = cc.Application.extend({
+    config:document['ccConfig'],
+    ctor:function (scene) {
+        this._super();
+        this.startScene = scene;
+        cc.COCOS2D_DEBUG = this.config['COCOS2D_DEBUG'];
+        cc.initDebugSetting();
+        var doc = document.documentElement;
+        var width = doc.clientWidth;
+        var height = doc.clientHeight;
+        cc.setup(this.config.tag, width, height);
+        cc.AppController.shareAppController().didFinishLaunchingWithOptions();
+    },
+    applicationDidFinishLaunching:function () {
+        // initialize director
+        var director = cc.Director.getInstance();
 
-var vibrate = function() {
-    navigator.notification.vibrate(0);
-};
+        var resourceSize = cc.size(480, 800);
+        var designSize = cc.size(480, 800);
 
-function roundNumber(num) {
-    var dec = 3;
-    var result = Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
-    return result;
-}
+        director.setContentScaleFactor(resourceSize.width / designSize.width);
+        cc.EGLView.getInstance().setDesignResolutionSize(designSize.width, designSize.height, cc.RESOLUTION_POLICY.SHOW_ALL);
 
-var accelerationWatch = null;
+        // turn on display FPS
+        director.setDisplayStats(this.config['showFPS']);
 
-function updateAcceleration(a) {
-    document.getElementById('x').innerHTML = roundNumber(a.x);
-    document.getElementById('y').innerHTML = roundNumber(a.y);
-    document.getElementById('z').innerHTML = roundNumber(a.z);
-}
+        // set FPS. the default value is 1.0/60 if you don't call this
+        director.setAnimationInterval(1.0 / this.config['frameRate']);
 
-var toggleAccel = function() {
-    if (accelerationWatch !== null) {
-        navigator.accelerometer.clearWatch(accelerationWatch);
-        updateAcceleration({
-            x : "",
-            y : "",
-            z : ""
-        });
-        accelerationWatch = null;
-    } else {
-        var options = {};
-        options.frequency = 1000;
-        accelerationWatch = navigator.accelerometer.watchAcceleration(
-                updateAcceleration, function(ex) {
-                    alert("accel fail (" + ex.name + ": " + ex.message + ")");
-                }, options);
+        //load resources
+        cc.LoaderScene.preload(g_resources, function () {
+            director.replaceScene(new this.startScene());
+        }, this);
+
+        return true;
     }
-};
+});
 
-var preventBehavior = function(e) {
-    e.preventDefault();
-};
-
-function dump_pic(data) {
-    var viewport = document.getElementById('viewport');
-    console.log(data);
-    viewport.style.display = "";
-    viewport.style.position = "absolute";
-    viewport.style.top = "10px";
-    viewport.style.left = "10px";
-    document.getElementById("test_img").src = data;
-}
-
-function fail(msg) {
-    alert(msg);
-}
-
-function show_pic() {
-    navigator.camera.getPicture(dump_pic, fail, {
-        quality : 50
-    });
-}
-
-function close() {
-    var viewport = document.getElementById('viewport');
-    viewport.style.position = "relative";
-    viewport.style.display = "none";
-}
-
-function contacts_success(contacts) {
-    alert(contacts.length
-            + ' contacts returned.'
-            + (contacts[2] && contacts[2].name ? (' Third contact is ' + contacts[2].name.formatted)
-                    : ''));
-}
-
-function get_contacts() {
-    var obj = new ContactFindOptions();
-    obj.filter = "";
-    obj.multiple = true;
-    navigator.contacts.find(
-            [ "displayName", "name" ], contacts_success,
-            fail, obj);
-}
-
-function check_network() {
-    var networkState = navigator.network.connection.type;
-
-    var states = {};
-    states[Connection.UNKNOWN]  = 'Unknown connection';
-    states[Connection.ETHERNET] = 'Ethernet connection';
-    states[Connection.WIFI]     = 'WiFi connection';
-    states[Connection.CELL_2G]  = 'Cell 2G connection';
-    states[Connection.CELL_3G]  = 'Cell 3G connection';
-    states[Connection.CELL_4G]  = 'Cell 4G connection';
-    states[Connection.NONE]     = 'No network connection';
-
-    confirm('Connection type:\n ' + states[networkState]);
-}
-
-var watchID = null;
-
-function updateHeading(h) {
-    document.getElementById('h').innerHTML = h.magneticHeading;
-}
-
-function toggleCompass() {
-    if (watchID !== null) {
-        navigator.compass.clearWatch(watchID);
-        watchID = null;
-        updateHeading({ magneticHeading : "Off"});
-    } else {        
-        var options = { frequency: 1000 };
-        watchID = navigator.compass.watchHeading(updateHeading, function(e) {
-            alert('Compass Error: ' + e.code);
-        }, options);
-    }
-}
-
-function init() {
-    // the next line makes it impossible to see Contacts on the HTC Evo since it
-    // doesn't have a scroll button
-    // document.addEventListener("touchmove", preventBehavior, false);
-    document.addEventListener("deviceready", deviceInfo, true);
-}
+var myApp = new cocos2dApp(MyScene);
