@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="crosswalk_install_title">"Crosswalk Project Install"</string>
+<string name="decompression_progress_message">"Decompressing Crosswalk Project..."</string>
+<string name="download_progress_message">"Downloading Crosswalk Project from remote host..."</string>
+<string name="download_failed_message">"Download failed. An network error occurred."</string>
+<string name="download_failed_device_not_found">"Download failed. Storage device not found."</string>
+<string name="download_failed_insufficient_space">"Download failed. Insufficient disk space."</string>
+<string name="download_failed_time_out">"Download failed. The network connection timed out."</string>
+<string name="market_open_failed_message">"Failed to open the app store"</string>
+<string name="startup_not_found_title">"Crosswalk Project Not Found"</string>
+<string name="startup_not_found_message">"This application requires the Crosswalk Project runtime to work. Select \"Continue\" to download it."</string>
+<string name="startup_architecture_mismatch_title">"Mismatch of CPU Architecture for Crosswalk Project"</string>
+<string name="startup_architecture_mismatch_message">"The Crosswalk Project must be updated to match the CPU architecture of the device. Select \"Continue\" to download it."</string>
+<string name="startup_signature_check_error_title">"Crosswalk Project Signature Verification Failed"</string>
+<string name="startup_signature_check_error_message">"The integrity of Crosswalk runtime library can not be verified."</string>
+<string name="startup_older_version_title">"New Crosswalk Project Runtime Required"</string>
+<string name="startup_older_version_message">"The version of Crosswalk Project on this system must be updated. Select \"Continue\" to download it."</string>
+<string name="startup_newer_version_title">"Crosswalk Project Version Incompatible"</string>
+<string name="startup_newer_version_message">"The application is not compatible with the installed version of the Crosswalk Project runtime."</string>
+<string name="xwalk_cancel">"Cancel"</string>
+<string name="xwalk_continue">"Continue"</string>
+<string name="xwalk_close">"Close"</string>
+<string name="xwalk_retry">"Retry"</string>
+</resources>
