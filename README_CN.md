@@ -1,57 +1,53 @@
 Cocos2d-Cordova-Crosswalk
 =======================
 
-This repository provides accelerated and powerful Android Web Runtime for Cocos2d-HTML5 developers.
+本工具为Cocos2d-HTML5开发者提供高效和功能强大的Android Web Runtime.
+* 包含加速的Cocos2d-HTML5引擎，并且支持最新的HTML5功能
+* 我们还提供对Cordova的支持，开发者可以使用成千上万的Cordova插件，包括社交分享，支付以及广告等丰富的功能
 
-* We provide high performance Cocos2d-HTML5 APIs, including full HTML5 features.
-
-* With cordova support, we provide thousands of plugins, including social network, payment and advertising integration.
-
-For more information about Cordova, please refer:
+了解更多的关于Cordova的信息，请访问：
 [Cordova](http://cordova.apache.org)
-and
+和
 [Cordova plugins](http://cordova.apache.org/docs/en/5.0.0/plugin_ref_plugman.md.html#Using%20Plugman%20to%20Manage%20Plugins)
 
-Preparation
+准备工作
 ---
 
-* Set up the host: the machine where you will be developing the application.
-
+* 配置开发环境：
   [Windows host](https://crosswalk-project.org/documentation/android/windows_host_setup.html)
 
   [Linux host](https://crosswalk-project.org/documentation/android/linux_host_setup.html)
 
-  Note that it may be possible to develop for Crosswalk on other platforms, but only Windows and Linux are officially supported.
+  请注意：您可以在其他的平台进行开发，但官方仅支持Windows和Linux平台上的开发
+* 安装 [Node.js](http://nodejs.org/download/)
+* 安装 plugman: npm install -g plugman
 
-* Install [Node.js](http://nodejs.org/download/)
-* Install plugman: npm install -g plugman
-
-Run the Cocos2dTest:
+如何打包并运行 Cocos2dTest:
 ---
 ```
 ./bin/create Cocos2dTest com.test.Cocos2dTest Cocos2dTest
 cd Cocos2dTest
 ```
-Replace files ```Cocos2dTest/assets/www/*``` with ```Cocos2dTest-src/*```
+将 ```Cocos2dTest/assets/www/*``` 下的文件替换为 ```Cocos2dTest-src/*```
 ```
 ./cordova build
 ```
-Install ```out/Cocos2dTest-debug.apk``` on your device and run.
+安装 ```out/Cocos2dTest-debug.apk``` 到您的Android手机并运行.
 
-Create your new Cocos2d project:
+创建新的项目:
 ---
 ```
 ./bin/create [path package activity]
-e.g.
+例如
 ./bin/create Test com.my.test Test
 ```
-Write your game under ```Test/assets/www```
+在 ```Test/assets/www``` 下进行游戏开发
 
-How to use cordova plugin:
+如何使用 cordova plugin:
 ---
-Example for cordova dialog plugin:
+以 cordova dialog plugin 为例:
 
-*1. Search the cordova dialog plugin:*
+*1. 搜索 cordova dialog plugin:*
 ```
 #plugman search dialogs
 
@@ -69,7 +65,7 @@ ga.moviecube.mcmanager.pindialog -
 #cd Test
 #plugman install --platform android --plugin https://github.com/apache/cordova-plugin-dialogs.git --project .
 ```
-*2. Modify `index.html`:*
+*2. 编辑 `index.html`:*
 ```
 ...
 <body style="padding:0; margin: 0; background: #000;">
@@ -116,22 +112,22 @@ var app = {
 };
 app.initialize();
 ```
-When user click back button, there will be a dialog prompted.
+当用户点击返回键, 将会弹出一个Dialog，而不是退出游戏.
 
-How to integrate your game with cocos2d-cordova-crosswalk:
+如何把您的游戏集成到 cocos2d-cordova-crosswalk:
 ---
-1. Create a new project with this tool
-2. On ```assets/www/cocos2d.js```:
-   Add your game source path in ```appFiles:[]```
-3. ```assets/www/main.js``` is the entry of the game.
-   Change ```var myApp = new cocos2dApp(MyScene);``` MyScene with your cocos2d scene.
-4. ```assets/www/engine``` folder contains Cocos2d-html5 engine, do not modify this folder.
+1. 通过该工具创建一个新的项目
+2. 在 ```assets/www/cocos2d.js```中:
+   在 ```appFiles:[]``` 中加入您的游戏JS文件
+3. ```assets/www/main.js``` 是游戏的主入口.
+   替换 ```var myApp = new cocos2dApp(MyScene);``` 中的MyScene为您自己的游戏Scene.
+4. ```assets/www/engine``` 中包含 Cocos2d-html5 引擎, 请不要修改改目录下的文件.
 
-A Real use case on Google play:
+在Google play中的真实案例:
 ---
 [CosmicCrash](https://play.google.com/store/apps/details?id=org.cocos.CosmicCrash.googleplay)
 
-How to build your own optimized xwalk_core_library
+如何编译自己的 xwalk_core_library
 ---
-Please refer below link:
+请参考下面的链接:
 [Build xwalk_core_library](https://github.com/crosswalk-project/cocos2d-cordova-crosswalk/blob/master/How%20to%20build%20optimized%20xwalk_core_library.md)
