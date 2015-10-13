@@ -16,7 +16,6 @@ framework/assets/www/phonegap-*.js
 framework/libs
 framework/javadoc-public
 framework/javadoc-private
-framework/xwalk_core_library
 test/libs
 example
 ./test
