@@ -18,6 +18,16 @@
 # under the License.
 #
 -->
+
+THIS REPOSITORY IS DEPRECATED
+===
+
+This repository is based on Cordova-Android 3.6.3, which is not being maintained upstream anymore. It thus does not receive new features or security fixes.
+
+Starting with Cordova-Android 4.0.0, Crosswalk is [officially supported](http://cordova.apache.org/announcements/2015/04/15/cordova-android-4.0.0.html) with the standard releases and this repository is not necessary anymore.
+
+You are encouraged to follow our [Cordova 4+ guide](https://crosswalk-project.org/documentation/cordova/cordova_4.html) and use a supported Cordova-Android release.
+
 Crosswalk-based Cordova Android
 ===
 
