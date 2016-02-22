@@ -34,6 +34,7 @@ Desktop.ini
 *.swp
 *.class
 *.jar
+!framework/xwalk_core_library/**/*.jar
 # IntelliJ IDEA files
 *.iml
 .idea
